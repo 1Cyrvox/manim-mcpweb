@@ -9,6 +9,7 @@ import asyncio
 import json
 import logging
 import os
+import pathlib
 import sys
 
 try:
@@ -128,7 +129,22 @@ async def _async_main():
 
 
 def main():
+    import argparse
     import warnings
+
+    # 解析 --work-dir 参数（WORK_DIR 已在 __init__.py 导入时通过 sys.argv 检测，
+    # 此处主要用于 --help 文档和设置环境变量供子进程使用）
+    parser = argparse.ArgumentParser(prog="manim-web-mcp")
+    parser.add_argument("--transport", default="stdio", help="Transport protocol (stdio)")
+    parser.add_argument("--work-dir", default=None,
+                        help="Working directory for output (media, projects, videos). "
+                             "Auto-detects project root by walking up from cwd looking "
+                             "for .joycode/mcp.json. Falls back to cwd.")
+    args, _ = parser.parse_known_args()
+
+    # 设置环境变量供子进程和 render_log.py 使用
+    if args.work_dir:
+        os.environ["MANIM_WEB_WORK_DIR"] = str(pathlib.Path(args.work_dir).resolve())
 
     # 抑制模块导入顺序的 RuntimeWarning（不影响功能，仅污染日志）
     warnings.filterwarnings("ignore", category=RuntimeWarning, module="runpy")

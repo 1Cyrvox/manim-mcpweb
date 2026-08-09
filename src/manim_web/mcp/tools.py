@@ -12,7 +12,73 @@ from typing import Annotated
 from pydantic import Field
 
 from .server import _ensure_session, _json, _load_manim, server
+# MCP roots lazy correction — safety net for unknown MCP clients
+try:
+    from mcp.server.mcpserver.context import Context as _MCPContext
+except ImportError:
+    _MCPContext = None  # type: ignore[assignment,misc]
 
+
+
+
+
+# MCP roots lazy correction state
+_work_dir_corrected = False
+
+
+async def _try_correct_work_dir_from_roots(ctx: _MCPContext) -> None:
+    """Try to correct WORK_DIR using MCP roots capability.
+
+    Safety net for MCP clients not covered by step 4 (IDE workspace storage).
+    If the client supports roots and provides workspace paths, we use them
+    to correct WORK_DIR if the initial detection was wrong.
+
+    This runs once on the first tool call that receives a Context.
+    Silently ignores any errors — this is best-effort, not critical.
+    """
+    global _work_dir_corrected
+    if _work_dir_corrected or _MCPContext is None:
+        return
+    _work_dir_corrected = True  # Only try once, even on failure
+
+    try:
+        # Check if client supports roots capability
+        caps = ctx.client_capabilities
+        if caps is None or caps.roots is None:
+            return
+
+        result = await ctx.session.list_roots()
+        if not result.roots:
+            return
+
+        from urllib.parse import unquote as _unquote
+        import json as _json
+        import manim_web
+
+        current_work_dir = manim_web.WORK_DIR
+
+        for root in result.roots:
+            uri = str(root.uri)
+            if not uri.startswith("file:///"):
+                continue
+            path_str = _unquote(uri[8:])
+            # On Windows, strip leading slash before drive letter (/d:/ -> d:/)
+            if len(path_str) > 2 and path_str[0] == "/" and path_str[2] == ":":
+                path_str = path_str[1:]
+            root_path = Path(path_str)
+            if not root_path.exists():
+                continue
+            # Check if this root contains .joycode/mcp.json with manim-web
+            mcp_json = root_path / ".joycode/mcp.json"
+            if mcp_json.exists():
+                with open(mcp_json, encoding="utf-8") as f:
+                    config = _json.load(f)
+                if "manim-web" in config.get("mcpServers", {}):
+                    if root_path.resolve() != current_work_dir:
+                        manim_web._update_work_dir(root_path)
+                    return  # Found the right root, done
+    except Exception:
+        pass  # Silently ignore — best-effort correction
 
 # ════════════════════════════════════════════════════════════════
 # Direct manim session tools — MCP operates manim in-process
@@ -30,7 +96,11 @@ async def web_persistent_start(
     sandbox: Annotated[str, Field(description="Sandbox level: strict (no file I/O, no imports), relaxed (restricted file I/O in project dir, safe imports), full (no restrictions)")] = "strict",
     caller: Annotated[str, Field(description="Caller identity for auto-naming isolation. E.g. 'claude', 'gpt', 'qwen'. When project is empty, auto-generated names use this as prefix. Different callers never share project names.")] = "demo",
     show_terminal: Annotated[bool, Field(description="Auto-open terminal window for render logs. Default true.")] = True,
+    ctx: _MCPContext = None,
 ) -> str:
+    # MCP roots lazy correction — fix WORK_DIR if initial detection was wrong
+    if ctx is not None:
+        await _try_correct_work_dir_from_roots(ctx)
     _load_manim()
     from ..core.session import DirectManimSession, get_existing_session, reset_session
     from ..project import PROJECTS_DIR

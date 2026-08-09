@@ -5,10 +5,99 @@ import sys
 import time
 from pathlib import Path
 
-# Working directory for output (same logic as manim_web.__init__: cwd by default)
+# Working directory for output (same logic as manim_web.__init__)
+# Detection priority:
+#   1. --work-dir CLI argument
+#   2. MANIM_WEB_WORK_DIR environment variable
+#   3. Walk up from cwd looking for .joycode/mcp.json (auto-detect project root)
+#   4. Search IDE workspace storage for projects with manim-web configured
+#   5. Fall back to cwd
 # ⚠️ tail_render_log.py 是 __main__ 脚本，不能用 from manim_web import WORK_DIR
 # 直接运行时 manim_web 包可能不在 sys.path 中，相对导入会失败
-WORK_DIR = Path(os.environ.get("MANIM_WEB_WORK_DIR", str(Path.cwd()))).resolve()
+def _detect_work_dir() -> Path:
+    # 1. CLI --work-dir (parse from sys.argv before argparse is ready)
+    for i, arg in enumerate(sys.argv):
+        if arg == "--work-dir" and i + 1 < len(sys.argv):
+            return Path(sys.argv[i + 1]).resolve()
+
+    # 2. Environment variable
+    env_dir = os.environ.get("MANIM_WEB_WORK_DIR")
+    if env_dir:
+        return Path(env_dir).resolve()
+
+    # 3. Walk up from cwd looking for .joycode/mcp.json (project root marker)
+    current = Path.cwd()
+    for parent in [current] + list(current.parents):
+        if (parent / ".joycode" / "mcp.json").exists():
+            return parent.resolve()
+
+    # 4. Search IDE workspace storage for project directories with manim-web configured
+    #    (handles JoyCode/VS Code MCP server where cwd is the IDE installation directory)
+    #    Reads workspace.json from IDE storage to find known workspace folders,
+    #    then checks which ones have .joycode/mcp.json with manim-web in mcpServers.
+    try:
+        import json as _json
+        from urllib.parse import unquote as _unquote
+
+        # Find IDE workspace storage directories (Windows / Linux / macOS)
+        _ws_dirs = []
+        for _ide_path in [
+            Path.home() / "AppData/Roaming/JoyCode/User/workspaceStorage",
+            Path.home() / "AppData/Roaming/Code/User/workspaceStorage",
+            Path.home() / "AppData/Roaming/Cursor/User/workspaceStorage",
+            Path.home() / "AppData/Roaming/Windsurf/User/workspaceStorage",
+            Path.home() / ".config/JoyCode/User/workspaceStorage",
+            Path.home() / ".config/Code/User/workspaceStorage",
+            Path.home() / ".config/Cursor/User/workspaceStorage",
+            Path.home() / "Library/Application Support/JoyCode/User/workspaceStorage",
+            Path.home() / "Library/Application Support/Code/User/workspaceStorage",
+        ]:
+            if _ide_path.exists():
+                _ws_dirs.append(_ide_path)
+
+        _candidates = []
+        for _ws_base in _ws_dirs:
+            for _ws_dir in _ws_base.iterdir():
+                _ws_json = _ws_dir / "workspace.json"
+                if not _ws_json.exists():
+                    continue
+                try:
+                    with open(_ws_json, encoding="utf-8") as f:
+                        _ws_config = _json.load(f)
+                    _folder_uri = _ws_config.get("folder", "")
+                    if not _folder_uri.startswith("file:///"):
+                        continue
+                    _path_str = _unquote(_folder_uri[8:])
+                    # On Windows, strip leading slash before drive letter (/d:/ -> d:/)
+                    if len(_path_str) > 2 and _path_str[0] == "/" and _path_str[2] == ":":
+                        _path_str = _path_str[1:]
+                    _folder_path = Path(_path_str)
+                    if not _folder_path.exists():
+                        continue
+                    _mcp_json = _folder_path / ".joycode/mcp.json"
+                    if not _mcp_json.exists():
+                        continue
+                    try:
+                        with open(_mcp_json, encoding="utf-8") as f:
+                            _mcp_config = _json.load(f)
+                        if "manim-web" in _mcp_config.get("mcpServers", {}):
+                            _candidates.append((_folder_path, _ws_dir.stat().st_mtime))
+                    except (OSError, ValueError):
+                        pass
+                except (OSError, ValueError):
+                    pass
+
+        if _candidates:
+            # Pick the most recently accessed workspace
+            _latest = max(_candidates, key=lambda x: x[1])
+            return _latest[0].resolve()
+    except Exception:
+        pass
+
+    # 5. Fall back to cwd
+    return Path.cwd().resolve()
+
+WORK_DIR = _detect_work_dir()
 PROJECTS_DIR = WORK_DIR / "media" / "projects"
 
 
