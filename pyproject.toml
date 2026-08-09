@@ -1,0 +1,87 @@
+[project]
+name = "manim-web-mcp"
+version = "2.0.13"
+description = "AI-driven manim animation engine — MCP protocol, real-time browser preview, session persistence, bundled optimized manim"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE", "manim-src/LICENSE"]
+requires-python = ">=3.12"
+authors = [
+    { name = "Cyrvox", email = "cyrvox@users.noreply.github.com" },
+]
+maintainers = [
+    { name = "Cyrvox" },
+]
+keywords = ["manim", "animation", "mcp", "ai", "real-time", "browser-preview", "math", "latex", "visualization"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Education",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Multimedia :: Graphics",
+    "Topic :: Multimedia :: Video",
+    "Topic :: Scientific/Engineering :: Visualization",
+    "Topic :: Education",
+    "Framework :: AsyncIO",
+    "Typing :: Typed",
+]
+dependencies = [
+    "mcp>=2.0.0",
+    "numpy",
+    "Pillow",
+    "websockets>=17.0.1",
+    "sympy",
+    "cloup>=0.13.0",
+    "rich>=12.0",
+    "watchdog>=2.0",
+    "pydub>=0.25",
+    "scipy>=1.7",
+    "tqdm>=4.0",
+    "opencv-python>=4.0",
+    "pycairo>=1.0",
+    "cairocffi>=1.0",
+]
+
+[project.optional-dependencies]
+turbojpeg = ["PyTurboJPEG>=2.0"]
+test = ["pytest>=8.0", "pytest-asyncio>=0.23"]
+
+[project.urls]
+Homepage = "https://github.com/1Cyrvox/manim-mcpweb"
+Documentation = "https://github.com/1Cyrvox/manim-mcpweb/tree/main/docs"
+Repository = "https://github.com/1Cyrvox/manim-mcpweb"
+Issues = "https://github.com/1Cyrvox/manim-mcpweb/issues"
+Changelog = "https://github.com/1Cyrvox/manim-mcpweb/releases"
+
+[project.scripts]
+manim-web = "manim_web.__main__:main"
+manim-web-mcp = "manim_web.mcp.server:main"
+
+[project.entry-points."manim.plugins"]
+"manim-web-mcp" = "manim_web._manim_plugin"
+
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src", "manim-src"]
+exclude = ["build*", "dist*", "tests*"]
+
+[tool.setuptools.package-data]
+manim = ["templates/**/*", "renderer/shaders/**/*"]
+manim_web = ["docs/**/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+markers = [
+    "integration: integration tests requiring manim runtime",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"

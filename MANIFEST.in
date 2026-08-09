@@ -1,0 +1,21 @@
+# Include vendored manim-src (optimized manim bundle)
+graft manim-src
+
+# Include essential files
+include LICENSE
+include README.md
+include pyproject.toml
+
+# Include docs for deployment to working directory
+graft docs
+
+# Exclude development files
+prune .github
+prune tests
+prune _render_tmp
+prune media
+prune docs/templates/media
+prune docs/templates/__pycache__
+
+# Exclude bytecode and caches
+global-exclude *.py[cod] __pycache__

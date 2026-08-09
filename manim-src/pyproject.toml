@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "manim"
+version = "0.20.2"
+description = "Manim Community Edition — persistent_mode patched"
+requires-python = ">=3.11"
+dependencies = [
+    "av>=15.0",
+    "beautifulsoup4>=4.12",
+    "click>=8.0",
+    "cloup>=2.0.0",
+    "decorator>=4.3.2",
+    "isosurfaces>=0.1.1",
+    "manimpango>=0.6.1,<1.0.0",
+    "mapbox-earcut>=1.0.0",
+    "moderngl>=5.7.0,<6.0.0",
+    "moderngl-window>=2.0.0",
+    "networkx>=2.6",
+    "numpy>=2.1",
+    "pillow>=11.0",
+    "pycairo>=1.14,<2.0.0",
+    "pydub>=0.22.0",
+    "pygments>=2.17",
+    "rich>=12.0.0",
+    "scipy>=1.13.0",
+    "screeninfo>=0.7.0",
+    "skia-pathops>=0.9.0",
+    "srt>=3.0.0",
+    "svgelements>=1.9.0",
+    "tqdm>=4.21.0",
+    "typing-extensions>=4.12.0",
+    "watchdog>=2.0.0",
+]
+
+[project.scripts]
+manim = "manim.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["manim*"]
+
+[tool.setuptools.package-data]
+manim = [
+    "templates/**/*",
+    "renderer/shaders/**/*",
+    "_config/*.cfg",
+    "utils/testing/*.cfg",
+    "py.typed",
+]
