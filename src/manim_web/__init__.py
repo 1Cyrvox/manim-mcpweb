@@ -1,4 +1,4 @@
-__version__ = "2.0.15"
+__version__ = "2.0.17"
 import os
 import sys
 from pathlib import Path
@@ -18,8 +18,69 @@ except Exception:
 #   1. --work-dir CLI argument
 #   2. MANIM_WEB_WORK_DIR environment variable
 #   3. Walk up from cwd looking for .joycode/mcp.json (auto-detect project root)
-#   4. Search IDE workspace storage for projects with manim-web configured
+#   4. Search PARENT IDE's workspace storage only (avoid cross-IDE contamination)
 #   5. Fall back to cwd
+
+def _detect_parent_ide() -> str | None:
+    """Detect which IDE launched this process by walking up the process tree.
+
+    Returns one of: 'joycode', 'code', 'cursor', 'windsurf', 'codearts', or None.
+    When multiple IDEs run manim-web-mcp simultaneously, this ensures each
+    instance only searches its own IDE's workspace storage.
+    """
+    try:
+        import subprocess as _sp
+        _pid = os.getpid()
+        for _ in range(10):  # Walk up at most 10 levels
+            try:
+                if sys.platform == "win32":
+                    _r = _sp.run(
+                        ["wmic", "process", "where", f"ProcessId={_pid}",
+                         "get", "ParentProcessId,ExecutablePath", "/value"],
+                        capture_output=True, text=True, timeout=3,
+                    )
+                    _ppid = None
+                    _exe = ""
+                    for _line in _r.stdout.strip().split("\n"):
+                        _line = _line.strip()
+                        if _line.startswith("ParentProcessId="):
+                            _ppid = int(_line.split("=")[1].strip())
+                        elif _line.startswith("ExecutablePath="):
+                            _exe = _line.split("=", 1)[1].strip().lower()
+                else:  # Linux / macOS
+                    _r = _sp.run(
+                        ["ps", "-o", "ppid=,command=", "-p", str(_pid)],
+                        capture_output=True, text=True, timeout=3,
+                    )
+                    _parts = _r.stdout.strip().split(None, 1)
+                    if len(_parts) < 2:
+                        break
+                    _ppid = int(_parts[0])
+                    _exe = _parts[1].lower()
+
+                if _ppid is None or _ppid <= 1:
+                    break
+
+                # Check executable path for IDE signatures (order matters: specific first)
+                if "joycode" in _exe:
+                    return "joycode"
+                if "codearts" in _exe or "huawei" in _exe:
+                    return "codearts"
+                if "cursor" in _exe:
+                    return "cursor"
+                if "windsurf" in _exe:
+                    return "windsurf"
+                if "code" in _exe and "cursor" not in _exe and "windsurf" not in _exe:
+                    return "code"
+
+                _pid = _ppid  # Walk up
+            except Exception:
+                break
+    except Exception:
+        pass
+    return None
+
+
 def _detect_work_dir() -> Path:
     # 1. CLI --work-dir (parse from sys.argv before argparse is ready)
     for i, arg in enumerate(sys.argv):
@@ -38,28 +99,55 @@ def _detect_work_dir() -> Path:
             return parent.resolve()
 
     # 4. Search IDE workspace storage for project directories with manim-web configured
-    #    (handles JoyCode/VS Code MCP server where cwd is the IDE installation directory)
-    #    Reads workspace.json from IDE storage to find known workspace folders,
-    #    then checks which ones have .joycode/mcp.json with manim-web in mcpServers.
+    #    IMPORTANT: Only search the PARENT IDE's workspace to avoid cross-IDE contamination.
+    #    When multiple IDEs run manim-web-mcp simultaneously, each instance must only
+    #    look at its own IDE's workspace, not all IDEs' workspaces.
+    #    Falls back to searching all IDEs only if parent IDE cannot be detected.
     try:
         import json as _json
         from urllib.parse import unquote as _unquote
 
-        # Find IDE workspace storage directories (Windows / Linux / macOS)
+        # Detect which IDE launched this process
+        _parent_ide = _detect_parent_ide()
+
+        # IDE name → workspace storage paths (Windows / Linux / macOS)
+        _ide_ws_map = {
+            "joycode": [
+                Path.home() / "AppData/Roaming/JoyCode/User/workspaceStorage",
+                Path.home() / ".config/JoyCode/User/workspaceStorage",
+                Path.home() / "Library/Application Support/JoyCode/User/workspaceStorage",
+            ],
+            "code": [
+                Path.home() / "AppData/Roaming/Code/User/workspaceStorage",
+                Path.home() / ".config/Code/User/workspaceStorage",
+                Path.home() / "Library/Application Support/Code/User/workspaceStorage",
+            ],
+            "cursor": [
+                Path.home() / "AppData/Roaming/Cursor/User/workspaceStorage",
+                Path.home() / ".config/Cursor/User/workspaceStorage",
+            ],
+            "windsurf": [
+                Path.home() / "AppData/Roaming/Windsurf/User/workspaceStorage",
+            ],
+            "codearts": [
+                Path.home() / "AppData/Roaming/CodeArts/User/workspaceStorage",
+                Path.home() / "AppData/Roaming/Huawei/CodeArts/User/workspaceStorage",
+                Path.home() / ".config/CodeArts/User/workspaceStorage",
+                Path.home() / ".config/Huawei/CodeArts/User/workspaceStorage",
+            ],
+        }
+
+        # Build list of workspace storage dirs to search
         _ws_dirs = []
-        for _ide_path in [
-            Path.home() / "AppData/Roaming/JoyCode/User/workspaceStorage",
-            Path.home() / "AppData/Roaming/Code/User/workspaceStorage",
-            Path.home() / "AppData/Roaming/Cursor/User/workspaceStorage",
-            Path.home() / "AppData/Roaming/Windsurf/User/workspaceStorage",
-            Path.home() / ".config/JoyCode/User/workspaceStorage",
-            Path.home() / ".config/Code/User/workspaceStorage",
-            Path.home() / ".config/Cursor/User/workspaceStorage",
-            Path.home() / "Library/Application Support/JoyCode/User/workspaceStorage",
-            Path.home() / "Library/Application Support/Code/User/workspaceStorage",
-        ]:
-            if _ide_path.exists():
-                _ws_dirs.append(_ide_path)
+        if _parent_ide and _parent_ide in _ide_ws_map:
+            # Only search the parent IDE's workspace (prevents cross-IDE contamination)
+            _ws_dirs = [p for p in _ide_ws_map[_parent_ide] if p.exists()]
+        else:
+            # Fallback: parent IDE unknown (e.g. terminal, Claude Desktop), search all
+            for _ide_paths in _ide_ws_map.values():
+                for _ide_path in _ide_paths:
+                    if _ide_path.exists():
+                        _ws_dirs.append(_ide_path)
 
         _candidates = []
         for _ws_base in _ws_dirs:

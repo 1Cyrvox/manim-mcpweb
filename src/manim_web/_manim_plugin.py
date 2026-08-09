@@ -11,6 +11,6 @@ entry point remains ``manim_web.mcp.server:main`` (registered under
 ``[project.scripts]``).
 """
 
-__version__ = "2.0.9"
+__version__ = "2.0.17"
 __plugin_name__ = "manim-web-mcp"
 __description__ = "AI-driven manim animation engine with MCP protocol and real-time browser preview"

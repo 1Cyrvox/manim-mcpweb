@@ -18,7 +18,15 @@ manim-web 通过 MCP (Model Context Protocol) 暴露 16 个工具，AI 助手调
 
 ## 二、MCP 配置方法
 
-### 2.1 标准配置
+### 2.1 安装
+
+```bash
+pip install manim-web-mcp
+```
+
+安装后 `manim-web-mcp` 命令全局可用。
+
+### 2.2 标准配置（pip 全局安装）
 
 在 AI 工具的 MCP 配置文件中添加：
 
@@ -26,23 +34,53 @@ manim-web 通过 MCP (Model Context Protocol) 暴露 16 个工具，AI 助手调
 {
   "mcpServers": {
     "manim-web": {
-      "command": "python",
-      "args": ["-m", "manim_web"],
-      "cwd": "D:/path/to/manim-web"
+      "command": "manim-web-mcp",
+      "args": ["--transport", "stdio"],
+      "env": {"PYTHONUNBUFFERED": "1"}
     }
   }
 }
 ```
 
-### 2.2 Cursor / Windsurf / Claude Desktop
+**无需指定 `cwd`** — 工作目录自动检测（见 §2.5）。
 
-上述工具均支持 MCP，在设置界面添加 MCP Server 配置即可，格式同上。
+### 2.3 Cursor / Windsurf / Claude Desktop
 
-### 2.3 JoyCode / 其他支持 MCP 的 IDE
+上述工具均支持 MCP，在设置界面添加 MCP Server 配置即可，格式同 §2.2。
 
-在 `.joycode/mcp.json` 或对应配置文件中添加 manim-web 服务。
+### 2.4 JoyCode / 其他支持 MCP 的 IDE
 
-### 2.4 启动验证
+在 `.joycode/mcp.json` 中添加：
+
+```json
+{
+  "mcpServers": {
+    "manim-web": {
+      "timeout": 10000,
+      "command": "manim-web-mcp",
+      "args": ["--transport", "stdio"],
+      "env": {"PYTHONUNBUFFERED": "1"},
+      "type": "stdio"
+    }
+  }
+}
+```
+
+### 2.5 工作目录自动检测
+
+pip 全局安装后，`manim-web-mcp` 自动检测工作目录，**零配置即可使用**。检测优先级：
+
+| 优先级 | 检测方式 | 适用场景 |
+|--------|----------|----------|
+| 1 | CLI `--work-dir` 参数 | 手动指定 |
+| 2 | `MANIM_WEB_WORK_DIR` 环境变量 | 环境变量配置 |
+| 3 | 从 cwd 向上查找 `.joycode/mcp.json` | 项目根目录标记 |
+| 4 | IDE workspace storage 搜索 | JoyCode/VSCode/Cursor/Windsurf |
+| 5 | 回退到 cwd | 兜底 |
+
+此外，首次工具调用时通过 MCP `roots` 协议进行懒校正（第 6 级安全网），支持任何实现了 roots capability 的 MCP 客户端。
+
+### 2.6 启动验证
 
 AI 连接后，调用 `web_persistent_list` 工具，返回成功即表示 MCP 连接正常。
 
@@ -212,24 +250,7 @@ web_persistent_play_composite(animations='[
 ]')
 ```
 
-### 7.6 竖版（portrait）动画
-
-竖版适合手机竖屏视频，坐标体系与横版不同：
-
-| 方向 | 像素 | x 范围 | y 范围 |
-|------|------|--------|--------|
-| 横版 landscape | 1280×720 | [-7.1, 7.1] | [-4, 4] |
-| 竖版 portrait | 720×1280 | [-4, 4] | [-7.1, 7.1] |
-
-```
-web_persistent_start(project="short-video", orientation="portrait")
-```
-
-竖版布局建议：图形纵向排列 `arrange(DOWN)`，公式垂直展示，充分利用 y 方向空间。
-
-模板参考 → [docs/templates/portrait_demo.py](templates/portrait_demo.py)
-
-### 7.7 高级动画（需 add_code）
+### 7.6 高级动画（需 add_code）
 
 某些动画需要额外参数，`web_persistent_play` 不支持，需用 `add_code`：
 
