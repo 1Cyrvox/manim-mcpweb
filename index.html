@@ -48,7 +48,7 @@ a:hover{color:#9b7eff}
 @keyframes float1{0%,100%{transform:translate(0,0)}50%{transform:translate(40px,30px)}}
 @keyframes float2{0%,100%{transform:translate(0,0)}50%{transform:translate(-30px,-40px)}}
 @keyframes float3{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-20px,20px) scale(1.1)}}
-.hero *{position:relative;z-index:2}
+.hero *:not(.hero-glow){position:relative;z-index:2}
 .section,.cta-section,.footer{position:relative;z-index:1}
 .hero-badge{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1px solid rgba(124,92,252,.2);border-radius:99px;padding:8px 20px;font-size:.82em;color:var(--text2);margin-bottom:32px;backdrop-filter:blur(10px);box-shadow:0 0 20px rgba(124,92,252,.08)}
 .hero-badge .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite}
