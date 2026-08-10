@@ -144,7 +144,11 @@ def main():
 
     # 设置环境变量供子进程和 render_log.py 使用
     if args.work_dir:
-        os.environ["MANIM_WEB_WORK_DIR"] = str(pathlib.Path(args.work_dir).resolve())
+        work_dir_resolved = pathlib.Path(args.work_dir).resolve()
+        os.environ["MANIM_WEB_WORK_DIR"] = str(work_dir_resolved)
+        # 同步 os.chdir，确保 manim 的 media 输出目录基于 work-dir
+        # 而非进程 cwd（如 System32 无写入权限）
+        os.chdir(work_dir_resolved)
 
     # 抑制模块导入顺序的 RuntimeWarning（不影响功能，仅污染日志）
     warnings.filterwarnings("ignore", category=RuntimeWarning, module="runpy")

@@ -205,6 +205,8 @@ def _update_work_dir(new_dir: Path) -> None:
     if new_dir == WORK_DIR:
         return
     WORK_DIR = new_dir
+    # 同步 os.chdir，确保 manim 的 media 输出目录基于 work-dir
+    os.chdir(WORK_DIR)
     # Update dependent module-level constants
     try:
         from .project import store as _store
