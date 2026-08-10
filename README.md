@@ -26,7 +26,7 @@
 
 <br/>
 
-<h3><code>pip install manim-web-mcp</code> · <a href="docs/快速上手.md">快速上手</a> · <a href="docs/AI使用指南.md">AI 使用指南</a> · <a href="docs/manim%20API参考.md">API 参考</a></h3>
+<h3><code>pip install manim-web-mcp</code> · <a href="https://github.com/1Cyrvox/manim-mcpweb/blob/main/src/manim_web/docs/AI使用指南.md">AI 使用指南</a> · <a href="https://github.com/1Cyrvox/manim-mcpweb/blob/main/src/manim_web/docs/manim%20API参考.md">API 参考</a></h3>
 
 </div>
 
@@ -139,7 +139,7 @@ manim-web-mcp                       # 🚀 启动！浏览器自动打开预览
 | `web_persistent_list` | 列出所有项目 |
 | `web_persistent_stop` | 停止会话 |
 
-> 📖 [MCP 工具参考](docs/MCP工具参考.md) · [manim API 参考](docs/manim%20API参考.md) — 74 动画 + 141 图形 + 40 缓动 + 149 工具
+> 📖 [MCP 工具参考](https://github.com/1Cyrvox/manim-mcpweb/blob/main/src/manim_web/docs/manim%20API参考.md) · [manim API 参考](https://github.com/1Cyrvox/manim-mcpweb/blob/main/src/manim_web/docs/manim%20API参考.md) — 74 动画 + 141 图形 + 40 缓动 + 149 工具
 
 ---
 
@@ -157,13 +157,9 @@ manim-web-mcp                       # 🚀 启动！浏览器自动打开预览
 
 | 📖 | 链接 |
 |:---|:-----|
-| 🚀 快速上手 | [5 分钟入门](docs/快速上手.md) |
-| 🤖 AI 使用指南 | [MCP 标准流程](docs/AI使用指南.md) |
-| 🔧 工具参数 | [MCP 工具参考](docs/MCP工具参考.md) |
-| 📐 API 签名 | [manim API 参考](docs/manim%20API参考.md) |
-| 🏗 架构设计 | [模块架构](docs/架构参考.md) |
-| 📝 更新日志 | [版本历史](docs/变更记录.md) |
-| ❓ 常见问题 | [故障排查](docs/常见问题.md) |
+| 🤖 AI 使用指南 | [MCP 标准流程](https://github.com/1Cyrvox/manim-mcpweb/blob/main/src/manim_web/docs/AI使用指南.md) |
+| 📐 API 签名 | [manim API 参考](https://github.com/1Cyrvox/manim-mcpweb/blob/main/src/manim_web/docs/manim%20API参考.md) |
+| 📝 更新日志 | [版本历史](https://github.com/1Cyrvox/manim-mcpweb/blob/main/src/manim_web/docs/更新日志.md) |
 
 ---
 

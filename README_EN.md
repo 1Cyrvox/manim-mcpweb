@@ -26,7 +26,7 @@
 
 <br/>
 
-<h3><code>pip install manim-web-mcp</code> · <a href="docs/快速上手.md">Quick Start</a> · <a href="docs/AI使用指南.md">AI Guide</a> · <a href="docs/manim%20API参考.md">API Reference</a></h3>
+<h3><code>pip install manim-web-mcp</code> · <a href="https://github.com/1Cyrvox/manim-mcpweb/blob/main/src/manim_web/docs/AI使用指南.md">AI Guide</a> · <a href="https://github.com/1Cyrvox/manim-mcpweb/blob/main/src/manim_web/docs/manim%20API参考.md">API Reference</a></h3>
 
 </div>
 
@@ -139,7 +139,7 @@ manim-web-mcp                       # 🚀 Launch! Browser opens preview automat
 | `web_persistent_list` | List all projects |
 | `web_persistent_stop` | Stop session |
 
-> 📖 [MCP Tool Reference](docs/MCP工具参考.md) · [manim API Reference](docs/manim%20API参考.md) — 74 animations + 141 mobjects + 40 easings + 149 utilities
+> 📖 [MCP Tool Reference](https://github.com/1Cyrvox/manim-mcpweb/blob/main/src/manim_web/docs/manim%20API参考.md) · [manim API Reference](https://github.com/1Cyrvox/manim-mcpweb/blob/main/src/manim_web/docs/manim%20API参考.md) — 74 animations + 141 mobjects + 40 easings + 149 utilities
 
 ---
 
@@ -157,13 +157,9 @@ manim-web-mcp                       # 🚀 Launch! Browser opens preview automat
 
 | 📖 | Link |
 |:---|:-----|
-| 🚀 Quick Start | [5-Minute Tutorial](docs/快速上手.md) |
-| 🤖 AI Guide | [MCP Standard Workflow](docs/AI使用指南.md) |
-| 🔧 Tool Parameters | [MCP Tool Reference](docs/MCP工具参考.md) |
-| 📐 API Signatures | [manim API Reference](docs/manim%20API参考.md) |
-| 🏗 Architecture | [Module Architecture](docs/架构参考.md) |
-| 📝 Changelog | [Version History](docs/变更记录.md) |
-| ❓ FAQ | [Troubleshooting](docs/常见问题.md) |
+| 🤖 AI Guide | [MCP Standard Workflow](https://github.com/1Cyrvox/manim-mcpweb/blob/main/src/manim_web/docs/AI使用指南.md) |
+| 📐 API Signatures | [manim API Reference](https://github.com/1Cyrvox/manim-mcpweb/blob/main/src/manim_web/docs/manim%20API参考.md) |
+| 📝 Changelog | [Version History](https://github.com/1Cyrvox/manim-mcpweb/blob/main/src/manim_web/docs/更新日志.md) |
 
 ---
 
