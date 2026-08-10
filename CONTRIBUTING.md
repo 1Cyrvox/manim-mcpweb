@@ -6,7 +6,7 @@
 
 ```bash
 # 克隆仓库
-git clone https://github.com/1Cyrvox/manimmcp.git
+git clone https://github.com/1Cyrvox/manim-mcpweb.git
 cd manim-web
 
 # 安装开发依赖（含测试工具）
@@ -38,7 +38,7 @@ src/manim_web/           ← 源码（src-layout, PEP 517）
 ├── preview/             ← 浏览器预览
 ├── mcp/                 ← MCP 服务器
 │   ├── server.py        ← MCPServer 初始化 + 入口
-│   └── tools.py         ← 16 个 @server.tool 工具
+│   └── tools.py         ← 17 个 @server.tool 工具
 ├── project/             ← 项目管理
 ├── sandbox/             ← 沙箱安全
 ├── namespace/           ← 命名空间

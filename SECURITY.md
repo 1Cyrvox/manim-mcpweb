@@ -6,7 +6,7 @@ If you discover a security vulnerability in manim-web, **please do not open a pu
 
 Instead, please report it privately by:
 
-1. **GitHub Security Advisory** (preferred): Go to [Security → Advisories](https://github.com/1Cyrvox/manimmcp/security/advisories) and submit a new advisory.
+1. **GitHub Security Advisory** (preferred): Go to [Security → Advisories](https://github.com/1Cyrvox/manim-mcpweb/security/advisories) and submit a new advisory.
 
 2. **GitHub Issue with `security` label**: If you cannot use the advisory feature, open an issue and label it `security`, providing only a high-level description without exploit details.
 

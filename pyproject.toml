@@ -51,7 +51,7 @@ test = ["pytest>=8.0", "pytest-asyncio>=0.23"]
 
 [project.urls]
 Homepage = "https://github.com/1Cyrvox/manim-mcpweb"
-Documentation = "https://github.com/1Cyrvox/manim-mcpweb/tree/main/docs"
+Documentation = "https://github.com/1Cyrvox/manim-mcpweb/tree/main/src/manim_web/docs"
 Repository = "https://github.com/1Cyrvox/manim-mcpweb"
 Issues = "https://github.com/1Cyrvox/manim-mcpweb/issues"
 Changelog = "https://github.com/1Cyrvox/manim-mcpweb/releases"
