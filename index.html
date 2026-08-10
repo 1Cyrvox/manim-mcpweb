@@ -1,814 +1,2268 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>manim-web — AI × Math Animation</title>
-<meta name="description" content="AI驱动的数学动画引擎，说一句话，AI帮你写代码、渲染、预览。基于MCP协议，支持浏览器实时预览。">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --bg:#08080d;--surface:rgba(18,18,28,.7);--surface2:rgba(26,26,38,.6);
-  --border:rgba(255,255,255,.06);--border-h:rgba(124,92,252,.3);
-  --text:#eaeaf2;--text2:#8888a8;--text3:#55556a;
-  --accent:#7c5cfc;--accent2:#5a3cd8;--accent-g:rgba(124,92,252,.15);
-  --green:#4ade80;--red:#f87171;--blue:#60a5fa;--orange:#fb923c;--cyan:#22d3ee;
-  --radius:16px;--radius-sm:10px;
-}
-html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;line-height:1.7;overflow-x:hidden}
-body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 50% -20%,rgba(124,92,252,.08),transparent),radial-gradient(ellipse 60% 40% at 80% 100%,rgba(34,211,238,.05),transparent);pointer-events:none;z-index:0}
-a{color:var(--accent);text-decoration:none;transition:color .2s}
-a:hover{color:#9b7eff}
-::selection{background:var(--accent);color:#fff}
-::-webkit-scrollbar{width:6px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--accent2);border-radius:3px}
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>manim-web · 未来 · AI 动画引擎</title>
+    <meta name="description" content="AI驱动的数学动画引擎，说一句话，AI帮你写代码、渲染、预览。基于MCP协议，支持浏览器实时预览。" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>" />
+    <style>
+        /* ============================================================
+           1. CSS 变量 & 重置 — 未来感设计系统
+           ============================================================ */
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        :root {
+            --accent: #7c5cfc;
+            --accent2: #5a3cd8;
+            --cyan: #22d3ee;
+            --green: #4ade80;
+            --red: #f87171;
+            --orange: #fb923c;
+            --text: #f0ecff;
+            --text2: rgba(255, 255, 255, 0.6);
+            --text3: rgba(255, 255, 255, 0.3);
+            --glass: rgba(12, 12, 30, 0.35);
+            --glass-border: rgba(255, 255, 255, 0.06);
+            --radius: 20px;
+            --radius-sm: 12px;
+            --shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            --transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #07070e;
+            color: var(--text);
+            line-height: 1.7;
+            min-height: 100vh;
+            overflow-x: hidden;
+            /* ===== 动漫风格背景：免费商用高清图 + CSS 叠加 ===== */
+            /* 背景图由 JS 随机选择设置，此处仅保留渐变叠加层 */
+            background-image:
+                /* 动漫风格色彩叠加层 */
+                radial-gradient(ellipse at 20% 30%, rgba(124, 92, 252, 0.12) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 70%, rgba(34, 211, 238, 0.10) 0%, transparent 45%),
+                radial-gradient(ellipse at 50% 50%, rgba(251, 146, 60, 0.04) 0%, transparent 40%);
+            background-size: cover;
+            background-position: center center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            background-blend-mode: normal;
+        }
+        /* 背景加载失败回退 — 动漫风格 CSS 渐变 */
+        .no-image-fallback {
+            background:
+                radial-gradient(ellipse at 20% 30%, rgba(124, 92, 252, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 70%, rgba(34, 211, 238, 0.12) 0%, transparent 45%),
+                linear-gradient(145deg, #0b0818, #1a0e2e, #0f1a2e) !important;
+            filter: none !important;
+        }
+        ::selection {
+            background: var(--accent);
+            color: #fff;
+        }
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 4px;
+        }
 
-/* Nav */
-.nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 24px;transition:background .3s,box-shadow .3s,backdrop-filter .3s}
-.nav.scrolled{background:rgba(8,8,13,.85);backdrop-filter:blur(20px);box-shadow:0 1px 0 var(--border),0 4px 30px rgba(0,0,0,.3)}
-.nav-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:60px}
-.nav-logo{font-weight:800;font-size:1.15em;display:flex;align-items:center;gap:8px}
-.nav-logo span{background:linear-gradient(135deg,var(--accent),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.nav-links{display:flex;gap:24px;font-size:.88em}
-.nav-links a{color:var(--text2);transition:color .2s}
-.nav-links a:hover{color:var(--text)}
-.nav-install{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;padding:6px 16px;border-radius:var(--radius-sm);font-size:.82em;font-weight:600;transition:all .2s;box-shadow:0 2px 12px rgba(124,92,252,.25)}
-.nav-install:hover{box-shadow:0 4px 20px rgba(124,92,252,.4);color:#fff;transform:translateY(-1px)}
+        /* ============================================================
+           2. 高级粒子 Canvas (z-index: 0) — 全面升级
+           ============================================================ */
+        #particles-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 9998;
+            pointer-events: none;
+        }
 
-/* Hero */
-.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;text-align:center;padding:max(100px,12vh) 20px 60px;position:relative}
-#particles{position:fixed;inset:0;z-index:0;pointer-events:none}
-.hero-glow{position:absolute;width:600px;height:600px;border-radius:50%;filter:blur(120px);opacity:.12;pointer-events:none}
-.hero-glow.g1{background:var(--accent);top:-10%;left:10%;animation:float1 15s ease-in-out infinite}
-.hero-glow.g2{background:var(--blue);bottom:-10%;right:10%;animation:float2 18s ease-in-out infinite}
-.hero-glow.g3{background:var(--cyan);top:40%;left:50%;animation:float3 12s ease-in-out infinite}
-@keyframes float1{0%,100%{transform:translate(0,0)}50%{transform:translate(40px,30px)}}
-@keyframes float2{0%,100%{transform:translate(0,0)}50%{transform:translate(-30px,-40px)}}
-@keyframes float3{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-20px,20px) scale(1.1)}}
-.hero *:not(.hero-glow){position:relative;z-index:2}
-.section,.cta-section,.footer{position:relative;z-index:1}
-.hero-badge{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1px solid rgba(124,92,252,.2);border-radius:99px;padding:8px 20px;font-size:.82em;color:var(--text2);margin-bottom:32px;backdrop-filter:blur(10px);box-shadow:0 0 20px rgba(124,92,252,.08)}
-.hero-badge .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 8px var(--green)}50%{opacity:.5;box-shadow:0 0 4px var(--green)}}
-.hero h1{font-size:clamp(3rem,8vw,5.5rem);font-weight:900;letter-spacing:-.04em;margin-bottom:12px;background:linear-gradient(135deg,#fff 0%,var(--accent) 40%,var(--cyan) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1}
-.hero-sub{font-size:clamp(1.05rem,2.5vw,1.4rem);font-weight:400;color:var(--text2);margin-bottom:40px;max-width:640px;min-height:2.4em}
-.hero-sub .cursor{display:inline-block;width:2px;height:1.1em;background:var(--accent);margin-left:2px;vertical-align:text-bottom;animation:blink 1s step-end infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
-.hero-install{display:inline-flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 28px;font-family:'Fira Code',Consolas,monospace;font-size:1.05em;margin-bottom:32px;cursor:pointer;transition:all .25s;backdrop-filter:blur(10px)}
-.hero-install:hover{border-color:var(--accent);box-shadow:0 0 40px rgba(124,92,252,.2),0 0 0 1px rgba(124,92,252,.2);transform:translateY(-2px)}
-.hero-install .prompt{color:var(--green)}
-.hero-install .cmd{color:var(--text)}
-.hero-install .copy-icon{color:var(--text3);transition:color .2s}
-.hero-install:hover .copy-icon{color:var(--accent)}
-.hero-buttons{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
-.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:12px;font-size:.92em;font-weight:600;transition:all .25s;border:1px solid transparent;cursor:pointer}
-.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:rgba(124,92,252,.5)}
-.btn-primary:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(124,92,252,.4),0 0 0 1px rgba(124,92,252,.3)}
-.btn-secondary{background:var(--surface);color:var(--text);border-color:var(--border);backdrop-filter:blur(10px)}
-.btn-secondary:hover{border-color:var(--accent-h);color:#fff;transform:translateY(-2px)}
-.hero-stats{display:flex;gap:40px;margin-top:48px;font-size:.88em;color:var(--text2)}
-.hero-stats .stat-val{font-size:1.6em;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:block}
+        /* ============================================================
+           3. 树叶容器 (z-index: 1) — 保留
+           ============================================================ */
+        #leaves-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 9999;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .leaf {
+            position: absolute;
+            top: -40px;
+            opacity: 0.8;
+            transform-origin: center;
+            will-change: transform, opacity, top, left;
+            pointer-events: none;
+            filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
+        }
+        .leaf svg {
+            display: block;
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
 
-/* Section */
-.section{max-width:1100px;margin:0 auto;padding:100px 24px}
-.section-tag{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,rgba(124,92,252,.12),rgba(34,211,238,.08));border:1px solid rgba(124,92,252,.2);border-radius:99px;padding:6px 16px;font-size:.78em;color:var(--accent);font-weight:600;margin-bottom:16px}
-.section-title{font-size:clamp(1.8rem,4vw,2.6rem);font-weight:800;letter-spacing:-.02em;margin-bottom:12px;background:linear-gradient(135deg,#fff 0%,rgba(255,255,255,.7) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.section-sub{color:var(--text2);margin-bottom:48px;font-size:1.05em;max-width:600px}
-.section-center{text-align:center}
-.section-center .section-sub{margin-left:auto;margin-right:auto}
+        /* ============================================================
+           4. 导航 — 超薄毛玻璃
+           ============================================================ */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 0 28px;
+            height: 68px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(7, 7, 14, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            transition: background var(--transition), box-shadow var(--transition);
+        }
+        .nav.scrolled {
+            background: rgba(7, 7, 14, 0.85);
+            box-shadow: 0 4px 40px rgba(0, 0, 0, 0.3);
+        }
+        .nav-inner {
+            max-width: 1280px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .nav-logo {
+            font-weight: 800;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.5px;
+        }
+        .nav-logo span {
+            background: linear-gradient(135deg, var(--accent), var(--cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .nav-logo .badge {
+            font-size: 0.5rem;
+            font-weight: 400;
+            -webkit-text-fill-color: rgba(255, 255, 255, 0.25);
+            background: none;
+            letter-spacing: 0.5px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .nav-links a {
+            color: var(--text2);
+            transition: color var(--transition);
+            position: relative;
+        }
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            right: 0;
+            height: 1.5px;
+            background: var(--accent);
+            transform: scaleX(0);
+            transition: transform var(--transition);
+        }
+        .nav-links a:hover {
+            color: #fff;
+        }
+        .nav-links a:hover::after {
+            transform: scaleX(1);
+        }
+        .nav-install {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: #fff !important;
+            padding: 8px 22px;
+            border-radius: 40px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            transition: all var(--transition);
+            box-shadow: 0 2px 20px rgba(124, 92, 252, 0.25);
+        }
+        .nav-install:hover {
+            box-shadow: 0 6px 32px rgba(124, 92, 252, 0.45);
+            transform: translateY(-2px) scale(1.02);
+            color: #fff !important;
+        }
+        .nav-install::after {
+            display: none !important;
+        }
 
-/* Reveal Animation */
-.reveal{opacity:0;transform:translateY(40px) scale(.97);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1)}
-.reveal.visible{opacity:1;transform:translateY(0) scale(1)}
+        /* ============================================================
+           5. Hero — 全屏沉浸，视觉炸裂
+           ============================================================ */
+        .hero {
+            position: relative;
+            z-index: 2;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 120px 24px 60px;
+            background: radial-gradient(ellipse at 50% 40%, rgba(124, 92, 252, 0.05) 0%, transparent 60%);
+        }
+        .hero *:not(.hero-glow) {
+            position: relative;
+            z-index: 2;
+        }
+        /* 装饰光晕 — 更动态 */
+        .hero-glow {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(140px);
+            opacity: 0.12;
+            pointer-events: none;
+            z-index: 0;
+            animation: floatGlow 12s ease-in-out infinite alternate;
+        }
+        .hero-glow.g1 {
+            width: 700px;
+            height: 700px;
+            background: var(--accent);
+            top: -20%;
+            left: -10%;
+            animation-delay: 0s;
+        }
+        .hero-glow.g2 {
+            width: 500px;
+            height: 500px;
+            background: var(--cyan);
+            bottom: -10%;
+            right: -5%;
+            animation-delay: 4s;
+        }
+        .hero-glow.g3 {
+            width: 400px;
+            height: 400px;
+            background: #f472b6;
+            top: 40%;
+            left: 50%;
+            transform: translateX(-50%);
+            animation-delay: 8s;
+        }
+        @keyframes floatGlow {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+            100% {
+                transform: translate(40px, -30px) scale(1.1);
+            }
+        }
 
-/* Demo Grid */
-.demo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px}
-.demo-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:all .4s cubic-bezier(.16,1,.3,1);backdrop-filter:blur(10px);position:relative}
-.demo-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--cyan));opacity:0;transition:opacity .3s}
-.demo-card:hover::before{opacity:1}
-.demo-card:hover{transform:translateY(-8px) scale(1.02);border-color:var(--accent);box-shadow:0 20px 60px rgba(124,92,252,.15),0 0 0 1px rgba(124,92,252,.1)}
-.demo-card .card-header{padding:20px 22px 12px;display:flex;align-items:center;gap:12px}
-.demo-card .card-header .card-icon{font-size:1.5em;flex-shrink:0}
-.demo-card .card-header .card-title{flex:1}
-.demo-card .card-header .card-title h4{font-size:1.05em;font-weight:700;margin-bottom:2px}
-.demo-card .card-header .card-title code{font-size:.78em;color:var(--cyan);background:rgba(34,211,238,.08);padding:2px 8px;border-radius:6px}
-.demo-card .card-header .card-badge{font-size:.7em;color:var(--cyan);background:linear-gradient(135deg,rgba(34,211,238,.1),rgba(124,92,252,.1));border:1px solid rgba(34,211,238,.2);padding:3px 10px;border-radius:99px;font-weight:600;white-space:nowrap}
-.demo-card .img-wrap{position:relative;overflow:hidden;aspect-ratio:16/10;background:#0c0c14;margin:0 12px 12px;border-radius:var(--radius-sm)}
-.demo-card img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s}
-.demo-card:hover img{transform:scale(1.05)}
-.demo-card .img-wrap::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(8,8,13,.4),transparent 30%);border-radius:var(--radius-sm)}
-.demo-card .card-code{padding:0 16px 16px;font-family:'Fira Code',Consolas,monospace;font-size:.72em;line-height:1.7}
-.demo-card .card-code .mcp-line{display:flex;align-items:baseline;gap:6px;padding:2px 0;color:var(--text2)}
-.demo-card .card-code .mcp-line .mcp-tool{color:var(--cyan);white-space:nowrap}
-.demo-card .card-code .mcp-line .mcp-arg{color:#c4b5fd;opacity:.85}
-.demo-card .card-code .mcp-line .mcp-comment{color:var(--text3);font-style:italic}
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--glass);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(124, 92, 252, 0.15);
+            border-radius: 99px;
+            padding: 8px 24px 8px 20px;
+            font-size: 0.8rem;
+            color: var(--text2);
+            margin-bottom: 32px;
+            box-shadow: 0 0 30px rgba(124, 92, 252, 0.06);
+        }
+        .hero-badge .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--green);
+            box-shadow: 0 0 12px var(--green);
+            animation: pulse-dot 2s infinite;
+        }
+        @keyframes pulse-dot {
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.4;
+                transform: scale(0.8);
+            }
+        }
 
+        .hero h1 {
+            font-size: clamp(3.2rem, 10vw, 6.5rem);
+            font-weight: 900;
+            letter-spacing: -0.04em;
+            line-height: 1.05;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #ffffff 0%, var(--accent) 35%, var(--cyan) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 4px 40px rgba(124, 92, 252, 0.15));
+        }
+        .hero-sub {
+            font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+            font-weight: 400;
+            color: var(--text2);
+            max-width: 680px;
+            margin-bottom: 40px;
+            line-height: 1.8;
+            min-height: 2.6em;
+        }
+        .hero-sub .cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1.1em;
+            background: var(--accent);
+            margin-left: 2px;
+            vertical-align: text-bottom;
+            animation: blink-cursor 1s step-end infinite;
+        }
+        @keyframes blink-cursor {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0;
+            }
+        }
 
-/* Features */
-.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px}
-.feature{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:32px;transition:all .3s;backdrop-filter:blur(10px);position:relative;overflow:hidden}
-.feature::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0;transition:opacity .3s}
-.feature:hover{border-color:var(--accent);transform:translateY(-6px);box-shadow:0 20px 50px rgba(124,92,252,.12),0 0 0 1px rgba(124,92,252,.08)}
-.feature:hover::before{opacity:1}
-.feature .icon{font-size:2em;margin-bottom:16px;display:inline-block;width:56px;height:56px;line-height:56px;text-align:center;border-radius:14px;background:linear-gradient(135deg,rgba(124,92,252,.1),rgba(34,211,238,.06));border:1px solid rgba(124,92,252,.1)}
-.feature h3{font-size:1.1em;margin-bottom:10px}
-.feature p{color:var(--text2);font-size:.9em;line-height:1.7}
+        .hero-install {
+            display: inline-flex;
+            align-items: center;
+            gap: 14px;
+            background: var(--glass);
+            backdrop-filter: blur(18px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 14px 32px;
+            font-family: 'Fira Code', Consolas, monospace;
+            font-size: 1.05rem;
+            cursor: pointer;
+            transition: all var(--transition);
+            margin-bottom: 36px;
+            box-shadow: var(--shadow);
+        }
+        .hero-install:hover {
+            border-color: rgba(124, 92, 252, 0.3);
+            box-shadow: 0 0 60px rgba(124, 92, 252, 0.12), 0 0 0 1px rgba(124, 92, 252, 0.1);
+            transform: translateY(-3px);
+        }
+        .hero-install .prompt {
+            color: var(--green);
+        }
+        .hero-install .cmd {
+            color: var(--text);
+        }
+        .hero-install .copy-icon {
+            color: var(--text3);
+            transition: color var(--transition);
+            font-size: 1.1rem;
+        }
+        .hero-install:hover .copy-icon {
+            color: var(--accent);
+        }
 
-/* Comparison Table */
-.table-wrap{overflow-x:auto;margin:20px 0;border-radius:var(--radius);border:1px solid rgba(124,92,252,.12);box-shadow:0 8px 30px rgba(0,0,0,.15)}
-table{width:100%;border-collapse:collapse;font-size:.9em}
-th,td{padding:14px 18px;text-align:center;border-bottom:1px solid var(--border)}
-th{background:rgba(18,18,28,.9);color:var(--text2);font-weight:600;white-space:nowrap;font-size:.82em;text-transform:uppercase;letter-spacing:.05em}
-td:first-child{text-align:left;font-weight:600;color:var(--text)}
-tr:last-child td{border-bottom:none}
-.yes{color:var(--green);font-weight:700}
-.partial{color:var(--orange);font-weight:600}
-.no{color:var(--text3)}
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 34px;
+            border-radius: 60px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all var(--transition);
+            border: 1px solid transparent;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: #fff;
+            border-color: rgba(124, 92, 252, 0.3);
+            box-shadow: 0 4px 30px rgba(124, 92, 252, 0.25);
+        }
+        .btn-primary:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 12px 50px rgba(124, 92, 252, 0.4);
+        }
+        .btn-secondary {
+            background: var(--glass);
+            color: var(--text);
+            border-color: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(8px);
+        }
+        .btn-secondary:hover {
+            border-color: rgba(124, 92, 252, 0.3);
+            color: #fff;
+            transform: translateY(-3px);
+            background: rgba(124, 92, 252, 0.08);
+        }
 
-/* Quickstart Steps */
-.steps{display:flex;flex-direction:column;gap:24px;max-width:720px;margin:0 auto}
-.step{display:flex;gap:20px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;backdrop-filter:blur(10px);transition:all .3s}
-.step:hover{border-color:var(--accent);transform:translateX(6px);box-shadow:0 8px 30px rgba(124,92,252,.1)}
-.step-num{flex-shrink:0;width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1em;box-shadow:0 4px 15px rgba(124,92,252,.3)}
-.step-content h4{margin-bottom:6px;font-size:1.05em}
-.step-content p{color:var(--text2);font-size:.9em;margin-bottom:10px}
-pre{background:rgba(8,8,13,.9);border:1px solid rgba(124,92,252,.15);border-radius:var(--radius-sm);padding:16px 20px;overflow-x:auto;margin:0;box-shadow:0 4px 20px rgba(0,0,0,.2)}
-pre code{background:none;padding:0;font-size:.85em;line-height:1.8;font-family:'Fira Code',Consolas,monospace;color:#c4b5fd}
+        .hero-stats {
+            display: flex;
+            gap: 56px;
+            margin-top: 32px;
+            padding: 16px 32px;
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            border-radius: 60px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .hero-stats .stat-item {
+            text-align: center;
+        }
+        .hero-stats .stat-val {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent), var(--cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: block;
+            line-height: 1.2;
+        }
+        .hero-stats .stat-label {
+            font-size: 0.75rem;
+            color: var(--text3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
 
-/* MCP Tools */
-.tools-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:20px}
-.tool-group{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;backdrop-filter:blur(10px);transition:all .3s}
-.tool-group:hover{border-color:rgba(124,92,252,.3);box-shadow:0 8px 30px rgba(0,0,0,.15)}
-.tool-group h3{font-size:1em;margin-bottom:16px;display:flex;align-items:center;gap:8px;padding-bottom:12px;border-bottom:1px solid var(--border)}
-.tool-item{display:flex;align-items:baseline;gap:12px;padding:8px 0;font-size:.88em;border-bottom:1px solid rgba(255,255,255,.03)}
-.tool-item:last-child{border-bottom:none}
-.tool-item code{white-space:nowrap;font-size:.8em;min-width:230px;color:var(--cyan)}
-.tool-item span{color:var(--text2)}
+        /* ============================================================
+           6. 通用 Sections — 毛玻璃卡片 + 未来感
+           ============================================================ */
+        .section {
+            position: relative;
+            z-index: 2;
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 80px 24px 50px;
+        }
+        .section-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(124, 92, 252, 0.08);
+            border: 1px solid rgba(124, 92, 252, 0.12);
+            border-radius: 99px;
+            padding: 6px 18px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--accent);
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            margin-bottom: 18px;
+        }
+        .section-title {
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 14px;
+            background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.7) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .section-sub {
+            color: var(--text2);
+            font-size: 1.05rem;
+            max-width: 560px;
+            margin-bottom: 48px;
+        }
+        .section-center {
+            text-align: center;
+        }
+        .section-center .section-sub {
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .reveal {
+            opacity: 0;
+            transform: translateY(50px) scale(0.96);
+            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
 
-/* Sandbox */
-.sandbox-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}
-.sandbox-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;text-align:center;backdrop-filter:blur(10px);transition:all .3s;position:relative;overflow:hidden}
-.sandbox-card:hover{transform:translateY(-6px);border-color:var(--accent);box-shadow:0 16px 40px rgba(0,0,0,.2)}
-.sandbox-card .level{font-size:1.5em;font-weight:800;margin-bottom:8px;font-family:'Fira Code',Consolas,monospace}
-.sandbox-card .level.strict{color:var(--red)}
-.sandbox-card .level.relaxed{color:var(--orange)}
-.sandbox-card .level.full{color:var(--green)}
-.sandbox-card .tag{font-size:.75em;color:var(--text3);margin-bottom:12px}
-.sandbox-card p{color:var(--text2);font-size:.85em}
-.sandbox-card.strict-card::before,.sandbox-card.relaxed-card::before,.sandbox-card.full-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
-.sandbox-card.strict-card::before{background:var(--red)}
-.sandbox-card.relaxed-card::before{background:var(--orange)}
-.sandbox-card.full-card::before{background:var(--green)}
+        /* ============================================================
+           7. Demo Grid — 卡片升级 (保留原有 GIF)
+           ============================================================ */
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 28px;
+        }
+        .demo-card {
+            background: var(--glass);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            transition: all var(--transition);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+        }
+        .demo-card:hover {
+            transform: translateY(-10px) scale(1.01);
+            border-color: rgba(124, 92, 252, 0.2);
+            box-shadow: 0 24px 80px rgba(124, 92, 252, 0.08), 0 0 0 1px rgba(124, 92, 252, 0.05);
+        }
+        .demo-card .card-header {
+            padding: 20px 22px 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .demo-card .card-header .card-icon {
+            font-size: 1.6rem;
+            flex-shrink: 0;
+        }
+        .demo-card .card-header .card-title {
+            flex: 1;
+        }
+        .demo-card .card-header .card-title h4 {
+            font-size: 1.05rem;
+            font-weight: 700;
+        }
+        .demo-card .card-header .card-badge {
+            font-size: 0.65rem;
+            color: var(--cyan);
+            background: rgba(34, 211, 238, 0.08);
+            border: 1px solid rgba(34, 211, 238, 0.15);
+            padding: 3px 12px;
+            border-radius: 99px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .demo-card .img-wrap {
+            position: relative;
+            overflow: hidden;
+            aspect-ratio: 16/10;
+            background: #0a0a14;
+            margin: 0 12px 12px;
+            border-radius: var(--radius-sm);
+        }
+        .demo-card .img-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .demo-card:hover .img-wrap img {
+            transform: scale(1.06);
+        }
+        .demo-card .img-wrap::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(7, 7, 14, 0.3), transparent 40%);
+            border-radius: var(--radius-sm);
+            pointer-events: none;
+        }
+        .demo-card .card-code {
+            padding: 0 16px 18px;
+            font-family: 'Fira Code', Consolas, monospace;
+            font-size: 0.7rem;
+            line-height: 1.8;
+            color: var(--text2);
+        }
+        .demo-card .card-code .mcp-tool {
+            color: var(--cyan);
+        }
+        .demo-card .card-code .mcp-arg {
+            color: #c4b5fd;
+        }
+        .demo-card .card-code .mcp-comment {
+            color: var(--text3);
+            font-style: italic;
+        }
 
-/* Requirements */
-.req-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
-.req-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:22px;display:flex;align-items:center;gap:14px;backdrop-filter:blur(10px);transition:all .3s}
-.req-item:hover{border-color:rgba(124,92,252,.3);transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.15)}
-.req-item .req-icon{font-size:1.8em;flex-shrink:0}
-.req-item .req-text h4{font-size:.95em;margin-bottom:2px}
-.req-item .req-text p{font-size:.8em;color:var(--text2)}
+        /* ============================================================
+           8. Features — 网格
+           ============================================================ */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+        }
+        .feature {
+            background: var(--glass);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 32px 28px;
+            transition: all var(--transition);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        }
+        .feature:hover {
+            transform: translateY(-6px);
+            border-color: rgba(124, 92, 252, 0.15);
+            box-shadow: 0 20px 60px rgba(124, 92, 252, 0.06);
+        }
+        .feature .icon {
+            font-size: 2.2rem;
+            display: inline-block;
+            margin-bottom: 14px;
+            width: 56px;
+            height: 56px;
+            line-height: 56px;
+            text-align: center;
+            border-radius: 14px;
+            background: rgba(124, 92, 252, 0.06);
+            border: 1px solid rgba(124, 92, 252, 0.06);
+        }
+        .feature h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .feature p {
+            color: var(--text2);
+            font-size: 0.92rem;
+            line-height: 1.7;
+        }
 
-/* CTA */
-.cta-section{text-align:center;padding:100px 24px;position:relative}
-.cta-section::before{content:'';position:absolute;top:0;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,rgba(124,92,252,.3),transparent)}
-.cta-section::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:600px;height:300px;border-radius:50%;background:radial-gradient(ellipse,rgba(124,92,252,.06),transparent 70%);pointer-events:none}
-.cta-section h2{font-size:clamp(1.6rem,3.5vw,2.4rem);font-weight:800;margin-bottom:12px}
-.cta-section p{color:var(--text2);margin-bottom:32px;font-size:1.05em}
-.cta-section .btn{font-size:1em;padding:14px 36px}
+        /* ============================================================
+           9. Comparison Table
+           ============================================================ */
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: var(--radius);
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        th,
+        td {
+            padding: 16px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        th {
+            background: rgba(7, 7, 14, 0.5);
+            color: var(--text2);
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        td:first-child {
+            text-align: left;
+            font-weight: 600;
+            color: var(--text);
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        .yes {
+            color: var(--green);
+            font-weight: 700;
+        }
+        .partial {
+            color: var(--orange);
+            font-weight: 600;
+        }
+        .no {
+            color: var(--text3);
+        }
 
-/* Footer */
-.footer{text-align:center;padding:40px 24px;color:var(--text3);font-size:.82em;border-top:1px solid var(--border)}
-.footer a{color:var(--text2)}
-.footer a:hover{color:var(--accent)}
-.footer-links{display:flex;gap:20px;justify-content:center;margin-bottom:12px}
+        /* ============================================================
+           10. Steps
+           ============================================================ */
+        .steps {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            max-width: 720px;
+            margin: 0 auto;
+        }
+        .step {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 28px 32px;
+            transition: all var(--transition);
+        }
+        .step:hover {
+            border-color: rgba(124, 92, 252, 0.15);
+            transform: translateX(6px);
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.1);
+        }
+        .step-num {
+            flex-shrink: 0;
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 20px rgba(124, 92, 252, 0.25);
+        }
+        .step-content h4 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .step-content p {
+            color: var(--text2);
+            font-size: 0.92rem;
+        }
+        pre {
+            background: rgba(7, 7, 14, 0.8);
+            border: 1px solid rgba(124, 92, 252, 0.08);
+            border-radius: var(--radius-sm);
+            padding: 14px 20px;
+            overflow-x: auto;
+            margin-top: 8px;
+            font-family: 'Fira Code', Consolas, monospace;
+            font-size: 0.8rem;
+            color: #c4b5fd;
+            line-height: 1.8;
+        }
 
-/* Back to Top */
-.back-top{position:fixed;bottom:30px;right:30px;width:44px;height:44px;border-radius:12px;background:rgba(18,18,28,.9);border:1px solid rgba(124,92,252,.2);color:var(--text2);display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transform:translateY(10px);transition:all .3s;z-index:99;backdrop-filter:blur(10px);font-size:1.1em}
-.back-top.show{opacity:1;transform:translateY(0)}
-.back-top:hover{border-color:var(--accent);color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent2));transform:translateY(-3px);box-shadow:0 8px 25px rgba(124,92,252,.3)}
+        /* ============================================================
+           11. Tools
+           ============================================================ */
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+        }
+        .tool-group {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 28px;
+            transition: all var(--transition);
+        }
+        .tool-group:hover {
+            border-color: rgba(124, 92, 252, 0.12);
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.08);
+        }
+        .tool-group h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tool-item {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            padding: 8px 0;
+            font-size: 0.88rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+        }
+        .tool-item:last-child {
+            border-bottom: none;
+        }
+        .tool-item code {
+            font-size: 0.78rem;
+            min-width: 230px;
+            color: var(--cyan);
+            font-family: 'Fira Code', Consolas, monospace;
+        }
+        .tool-item span {
+            color: var(--text2);
+        }
 
-/* Responsive */
-@media(max-width:768px){
-  .nav-links{display:none}
-  .hero-stats{gap:24px;font-size:.8em}
-  .hero-stats .stat-val{font-size:1.3em}
-  .features,.tools-grid{grid-template-columns:1fr}
-  .step{flex-direction:column;gap:12px}
-  .sandbox-grid{grid-template-columns:1fr}
-}
-@media(max-width:480px){
-  .hero-install{font-size:.85em;padding:12px 16px}
-  .demo-grid{grid-template-columns:1fr 1fr}
-  .req-grid{grid-template-columns:1fr}
-}
-</style>
+        /* ============================================================
+           12. Sandbox
+           ============================================================ */
+        .sandbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+        .sandbox-card {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 28px 20px;
+            text-align: center;
+            transition: all var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        .sandbox-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(124, 92, 252, 0.15);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12);
+        }
+        .sandbox-card .level {
+            font-size: 1.6rem;
+            font-weight: 800;
+            font-family: 'Fira Code', Consolas, monospace;
+        }
+        .sandbox-card .level.strict {
+            color: var(--red);
+        }
+        .sandbox-card .level.relaxed {
+            color: var(--orange);
+        }
+        .sandbox-card .level.full {
+            color: var(--green);
+        }
+        .sandbox-card .tag {
+            font-size: 0.7rem;
+            color: var(--text3);
+            margin-bottom: 8px;
+        }
+        .sandbox-card p {
+            color: var(--text2);
+            font-size: 0.85rem;
+        }
+        .sandbox-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+        .sandbox-card.strict-card::before {
+            background: var(--red);
+        }
+        .sandbox-card.relaxed-card::before {
+            background: var(--orange);
+        }
+        .sandbox-card.full-card::before {
+            background: var(--green);
+        }
+
+        /* ============================================================
+           13. Requirements
+           ============================================================ */
+        .req-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+        }
+        .req-item {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-sm);
+            padding: 22px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all var(--transition);
+        }
+        .req-item:hover {
+            border-color: rgba(124, 92, 252, 0.12);
+            transform: translateY(-2px);
+        }
+        .req-item .req-icon {
+            font-size: 2rem;
+            flex-shrink: 0;
+        }
+        .req-item .req-text h4 {
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+        .req-item .req-text p {
+            font-size: 0.8rem;
+            color: var(--text2);
+        }
+
+        /* ============================================================
+           14. CTA
+           ============================================================ */
+        .cta-section {
+            position: relative;
+            z-index: 2;
+            max-width: 1280px;
+            margin: 0 auto;
+            text-align: center;
+            padding: 80px 24px 60px;
+        }
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 15%;
+            right: 15%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(124, 92, 252, 0.2), transparent);
+        }
+        .cta-section h2 {
+            font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+        .cta-section p {
+            color: var(--text2);
+            font-size: 1.05rem;
+            margin-bottom: 32px;
+        }
+
+        /* ============================================================
+           15. Footer
+           ============================================================ */
+        .footer {
+            position: relative;
+            z-index: 2;
+            max-width: 1280px;
+            margin: 0 auto;
+            text-align: center;
+            padding: 40px 24px 28px;
+            color: var(--text3);
+            font-size: 0.82rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.03);
+        }
+        .footer a {
+            color: var(--text2);
+            transition: color var(--transition);
+        }
+        .footer a:hover {
+            color: var(--accent);
+        }
+        .footer-links {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+        .footer .credit {
+            color: rgba(255, 255, 255, 0.12);
+            font-size: 0.7rem;
+            margin-top: 8px;
+        }
+        .footer .credit a {
+            color: rgba(255, 255, 255, 0.15);
+        }
+        .footer .credit a:hover {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* ============================================================
+           16. Back to Top
+           ============================================================ */
+        .back-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 99;
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            background: var(--glass);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: var(--text2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(12px);
+            transition: all var(--transition);
+            font-size: 1.2rem;
+        }
+        .back-top.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .back-top:hover {
+            border-color: var(--accent);
+            color: #fff;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            transform: translateY(-4px);
+            box-shadow: 0 8px 32px rgba(124, 92, 252, 0.25);
+        }
+
+        /* ============================================================
+           17. Responsive
+           ============================================================ */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            .hero-stats {
+                gap: 24px;
+                padding: 14px 24px;
+                flex-wrap: wrap;
+                justify-content: center;
+                border-radius: 32px;
+            }
+            .hero-stats .stat-val {
+                font-size: 1.5rem;
+            }
+            .hero {
+                padding: 100px 16px 40px;
+                min-height: 90vh;
+            }
+            .section {
+                padding: 60px 16px 30px;
+            }
+            .step {
+                flex-direction: column;
+                gap: 12px;
+                padding: 20px;
+            }
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+            .features {
+                grid-template-columns: 1fr;
+            }
+            .demo-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .hero-install {
+                font-size: 0.85rem;
+                padding: 12px 20px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .hero h1 {
+                font-size: clamp(2.4rem, 10vw, 3.8rem);
+            }
+            .sandbox-grid {
+                grid-template-columns: 1fr;
+            }
+            .req-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        @media (max-width: 480px) {
+            .demo-grid {
+                grid-template-columns: 1fr;
+            }
+            .hero-buttons .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            .hero-stats {
+                gap: 16px;
+                padding: 12px 16px;
+            }
+            .hero-stats .stat-val {
+                font-size: 1.2rem;
+            }
+            .hero-stats .stat-label {
+                font-size: 0.6rem;
+            }
+            .nav {
+                padding: 0 16px;
+                height: 60px;
+            }
+            .nav-logo {
+                font-size: 1rem;
+            }
+        }
+    </style>
 </head>
 <body>
 
-<!-- Nav -->
-<nav class="nav" id="nav">
-  <div class="nav-inner">
-    <a href="#" class="nav-logo">🎬 <span>manim-web</span></a>
-    <div class="nav-links">
-      <a href="#demos">演示</a>
-      <a href="#features">特性</a>
-      <a href="#compare">对比</a>
-      <a href="#quickstart">上手</a>
-      <a href="#tools">工具</a>
-      <a href="#sandbox">安全</a>
-    </div>
-    <a href="#quickstart" class="nav-install">开始使用</a>
-  </div>
-</nav>
+    <!-- ===== 高级粒子 Canvas (全新升级) ===== -->
+    <canvas id="particles-canvas"></canvas>
 
-<canvas id="particles"></canvas>
+    <!-- ===== 树叶容器 (保留) ===== -->
+    <div id="leaves-container"></div>
 
-<!-- Hero -->
-<section class="hero">
-  <div class="hero-glow g1"></div>
-  <div class="hero-glow g2"></div>
-  <div class="hero-glow g3"></div>
-  <div class="hero-badge"><span class="dot"></span>活跃维护中 · v2.0.17</div>
-  <h1>manim-web</h1>
-  <p class="hero-sub" id="heroSub"></p>
-  <div class="hero-install" onclick="copyInstall()" title="点击复制安装命令">
-    <span class="prompt">$</span>
-    <span class="cmd">pip install manim-web-mcp</span>
-    <span class="copy-icon">📋</span>
-  </div>
-  <div class="hero-buttons">
-    <a href="#quickstart" class="btn btn-primary">⚡ 快速上手</a>
-    <a href="https://github.com/1Cyrvox/manim-mcpweb" class="btn btn-secondary" target="_blank">GitHub ↗</a>
-    <a href="https://pypi.org/project/manim-web-mcp/" class="btn btn-secondary" target="_blank">PyPI ↗</a>
-  </div>
-  <div class="hero-stats">
-    <div><span class="stat-val" data-count="16">0</span>MCP 工具</div>
-    <div><span class="stat-val" data-count="3">0</span>安全级别</div>
-    <div><span class="stat-val" data-count="6">0</span>导出格式</div>
-  </div>
-</section>
+    <!-- ===== 导航 ===== -->
+    <nav class="nav" id="nav">
+        <div class="nav-inner">
+            <a href="#" class="nav-logo">
+                🎬 <span>manim-web</span>
+                <span class="badge">· 未来</span>
+            </a>
+            <div class="nav-links">
+                <a href="#demos">演示</a>
+                <a href="#features">特性</a>
+                <a href="#compare">对比</a>
+                <a href="#quickstart">上手</a>
+                <a href="#tools">工具</a>
+                <a href="#sandbox">安全</a>
+            </div>
+            <a href="#quickstart" class="nav-install">开始使用</a>
+        </div>
+    </nav>
 
-<!-- Demos -->
-<section class="section" id="demos">
-  <div class="section-center reveal">
-    <div class="section-tag">✨ 演示</div>
-    <h2 class="section-title">核心功能演示</h2>
-    <p class="section-sub">AI 一句话 → 代码自动生成 → 浏览器实时预览 → 一键导出</p>
-  </div>
-  <div class="demo-grid">
-    <div class="demo-card reveal">
-      <div class="card-header">
-        <div class="card-icon">🔷</div>
-        <div class="card-title"><h4>图形创建与变换</h4></div>
-        <div class="card-badge">核心</div>
-      </div>
-      <div class="img-wrap"><img src="https://raw.githubusercontent.com/1Cyrvox/manim-mcpweb/main/docs/demo_shapes.gif" alt="图形变换" loading="lazy"></div>
-      <div class="card-code">
-        <div class="mcp-line"><span class="mcp-tool">web_persistent_add</span><span class="mcp-arg">("c = Circle(color=BLUE)")</span></div>
-        <div class="mcp-line"><span class="mcp-tool">web_persistent_add</span><span class="mcp-arg">("self.play(Create(c))")</span></div>
-        <div class="mcp-line"><span class="mcp-comment"># → 圆形渐入动画</span></div>
-      </div>
-    </div>
-    <div class="demo-card reveal">
-      <div class="card-header">
-        <div class="card-icon">📐</div>
-        <div class="card-title"><h4>数学公式渲染</h4></div>
-        <div class="card-badge">核心</div>
-      </div>
-      <div class="img-wrap"><img src="https://raw.githubusercontent.com/1Cyrvox/manim-mcpweb/main/docs/demo_math.gif" alt="数学公式" loading="lazy"></div>
-      <div class="card-code">
-        <div class="mcp-line"><span class="mcp-tool">web_persistent_add</span><span class="mcp-arg">("eq = MathTex('E=mc^2')")</span></div>
-        <div class="mcp-line"><span class="mcp-tool">web_persistent_add</span><span class="mcp-arg">("self.play(Write(eq))")</span></div>
-        <div class="mcp-line"><span class="mcp-comment"># → LaTeX 公式书写动画</span></div>
-      </div>
-    </div>
-    <div class="demo-card reveal">
-      <div class="card-header">
-        <div class="card-icon">📈</div>
-        <div class="card-title"><h4>函数图像绘制</h4></div>
-        <div class="card-badge">核心</div>
-      </div>
-      <div class="img-wrap"><img src="https://raw.githubusercontent.com/1Cyrvox/manim-mcpweb/main/docs/demo_graph.gif" alt="函数图像" loading="lazy"></div>
-      <div class="card-code">
-        <div class="mcp-line"><span class="mcp-tool">web_persistent_add</span><span class="mcp-arg">("axes = Axes()")</span></div>
-        <div class="mcp-line"><span class="mcp-tool">web_persistent_add</span><span class="mcp-arg">("graph = axes.plot(lambda x: x**2)")</span></div>
-        <div class="mcp-line"><span class="mcp-comment"># → 坐标系 + 函数曲线</span></div>
-      </div>
-    </div>
-    <div class="demo-card reveal">
-      <div class="card-header">
-        <div class="card-icon">🎬</div>
-        <div class="card-title"><h4>动画编排组合</h4></div>
-        <div class="card-badge">核心</div>
-      </div>
-      <div class="img-wrap"><img src="https://raw.githubusercontent.com/1Cyrvox/manim-mcpweb/main/docs/demo_composite.gif" alt="综合动画" loading="lazy"></div>
-      <div class="card-code">
-        <div class="mcp-line"><span class="mcp-tool">web_persistent_add</span><span class="mcp-arg">("self.play(Transform(sq, c))")</span></div>
-        <div class="mcp-line"><span class="mcp-tool">web_persistent_play</span><span class="mcp-arg">("FadeOut(sq)")</span></div>
-        <div class="mcp-line"><span class="mcp-comment"># → 图形变换 + 淡出</span></div>
-      </div>
-    </div>
-    <div class="demo-card reveal">
-      <div class="card-header">
-        <div class="card-icon">📸</div>
-        <div class="card-title"><h4>实时截图捕获</h4></div>
-        <div class="card-badge">预览</div>
-      </div>
-      <div class="img-wrap"><img src="https://raw.githubusercontent.com/1Cyrvox/manim-mcpweb/main/docs/demo_shapes.gif" alt="截图捕获" loading="lazy"></div>
-      <div class="card-code">
-        <div class="mcp-line"><span class="mcp-tool">web_persistent_capture</span><span class="mcp-arg">(format="png")</span></div>
-        <div class="mcp-line"><span class="mcp-comment"># → 高质量截图，即时预览</span></div>
-        <div class="mcp-line"><span class="mcp-tool">web_persistent_frame</span><span class="mcp-arg">()</span></div>
-      </div>
-    </div>
-    <div class="demo-card reveal">
-      <div class="card-header">
-        <div class="card-icon">🎥</div>
-        <div class="card-title"><h4>视频渲染导出</h4></div>
-        <div class="card-badge">导出</div>
-      </div>
-      <div class="img-wrap"><img src="https://raw.githubusercontent.com/1Cyrvox/manim-mcpweb/main/docs/demo_composite.gif" alt="视频导出" loading="lazy"></div>
-      <div class="card-code">
-        <div class="mcp-line"><span class="mcp-tool">web_persistent_render_video</span><span class="mcp-arg">(format="mp4")</span></div>
-        <div class="mcp-line"><span class="mcp-tool">web_persistent_render_video</span><span class="mcp-arg">(format="gif")</span></div>
-        <div class="mcp-line"><span class="mcp-comment"># → mp4 / gif / webm 多格式</span></div>
-      </div>
-    </div>
-  </div>
-</section>
+    <!-- ===== Hero ===== -->
+    <section class="hero">
+        <div class="hero-glow g1"></div>
+        <div class="hero-glow g2"></div>
+        <div class="hero-glow g3"></div>
 
-<!-- Features -->
-<section class="section" id="features">
-  <div class="section-center reveal">
-    <div class="section-tag">🚀 特性</div>
-    <h2 class="section-title">为什么选 manim-web</h2>
-    <p class="section-sub">AI 驱动 · 浏览器实时预览 · 会话持久化 · 沙箱安全</p>
-  </div>
-  <div class="features">
-    <div class="feature reveal">
-      <div class="icon">🤖</div>
-      <h3>AI 驱动 · MCP 协议</h3>
-      <p>基于 Model Context Protocol 标准，与 Claude、Cursor、Windsurf 等 AI 客户端无缝集成。说一句话，AI 帮你写 manim 代码并渲染。</p>
-    </div>
-    <div class="feature reveal">
-      <div class="icon">👁️</div>
-      <h3>浏览器实时预览</h3>
-      <p>WebSocket 实时推送渲染帧到浏览器，代码即预览，增量渲染秒级响应。告别 CLI 反复渲染的痛苦循环。</p>
-    </div>
-    <div class="feature reveal">
-      <div class="icon">💾</div>
-      <h3>会话跨对话保持</h3>
-      <p>场景状态持久化到磁盘，AI 对话结束后场景不丢失。下次对话无缝续接，多项目并行互不干扰。</p>
-    </div>
-    <div class="feature reveal">
-      <div class="icon">🔒</div>
-      <h3>三级沙箱安全</h3>
-      <p>strict / relaxed / full 三级代码执行策略，危险操作拦截。AI 生成代码安全可控，默认最安全模式。</p>
-    </div>
-    <div class="feature reveal">
-      <div class="icon">📦</div>
-      <h3>一键安装 · 内置 manim</h3>
-      <p>pip install 一步到位，内置优化版 manim v0.20.2。无需单独安装 manim，依赖链自动处理。</p>
-    </div>
-    <div class="feature reveal">
-      <div class="icon">🎬</div>
-      <h3>多格式导出</h3>
-      <p>支持 mp4 / gif / webm 视频导出，高质量截图捕获。从创作到分享一气呵成。</p>
-    </div>
-  </div>
-</section>
+        <div class="hero-badge">
+            <span class="dot"></span>
+            活跃维护 · v2.0.17 · 下一代动画引擎
+        </div>
 
-<!-- Comparison -->
-<section class="section" id="compare">
-  <div class="section-center reveal">
-    <div class="section-tag">📊 对比</div>
-    <h2 class="section-title">对比其他方案</h2>
-    <p class="section-sub">manim-web 是唯一同时支持 AI 驱动 + 浏览器预览 + 会话持久化的方案</p>
-  </div>
-  <div class="table-wrap reveal">
-    <table>
-      <thead><tr><th></th><th>manim-web</th><th>传统 CLI</th><th>VSCode 插件</th><th>在线 Playground</th></tr></thead>
-      <tbody>
-        <tr><td>AI 驱动</td><td class="yes">✅ MCP</td><td class="no">❌</td><td class="no">❌</td><td class="no">❌</td></tr>
-        <tr><td>浏览器实时预览</td><td class="yes">✅ WebSocket</td><td class="no">❌</td><td class="partial">仅 VSCode</td><td class="yes">✅</td></tr>
-        <tr><td>会话跨对话保持</td><td class="yes">✅ 持久化</td><td class="no">❌</td><td class="no">❌</td><td class="no">❌</td></tr>
-        <tr><td>多项目并行</td><td class="yes">✅ 独立场景</td><td class="no">❌</td><td class="no">❌</td><td class="no">❌</td></tr>
-        <tr><td>沙箱安全</td><td class="yes">✅ 三级策略</td><td class="no">❌</td><td class="no">❌</td><td class="no">❌</td></tr>
-      </tbody>
-    </table>
-  </div>
-</section>
+        <h1>manim-web</h1>
+        <p class="hero-sub" id="heroSub"></p>
 
-<!-- Quickstart -->
-<section class="section" id="quickstart">
-  <div class="section-center reveal">
-    <div class="section-tag">⚡ 上手</div>
-    <h2 class="section-title">30 秒上手</h2>
-    <p class="section-sub">三步开始创作 AI 动画</p>
-  </div>
-  <div class="steps">
-    <div class="step reveal">
-      <div class="step-num">1</div>
-      <div class="step-content">
-        <h4>安装</h4>
-        <p>确保 Python 3.12+ 已安装，然后：</p>
-        <pre><code>pip install manim-web-mcp</code></pre>
-      </div>
-    </div>
-    <div class="step reveal">
-      <div class="step-num">2</div>
-      <div class="step-content">
-        <h4>启动</h4>
-        <p>运行命令，浏览器自动打开预览页面：</p>
-        <pre><code>manim-web-mcp</code></pre>
-      </div>
-    </div>
-    <div class="step reveal">
-      <div class="step-num">3</div>
-      <div class="step-content">
-        <h4>创作</h4>
-        <p>在 AI 客户端中用 MCP 工具生成动画：</p>
-        <pre><code>web_persistent_start(project="demo")
-web_persistent_add(code="c = Circle(radius=1, color=BLUE)")
-web_persistent_add(code="self.play(Create(c))")</code></pre>
-      </div>
-    </div>
-  </div>
-</section>
+        <div class="hero-install" onclick="copyInstall()" title="点击复制安装命令">
+            <span class="prompt">$</span>
+            <span class="cmd">pip install manim-web-mcp</span>
+            <span class="copy-icon">📋</span>
+        </div>
 
-<!-- MCP Tools -->
-<section class="section" id="tools">
-  <div class="section-center reveal">
-    <div class="section-tag">🔧 工具</div>
-    <h2 class="section-title">MCP 工具一览</h2>
-    <p class="section-sub">16 个精心设计的 MCP 工具，覆盖动画创作全流程</p>
-  </div>
-  <div class="tools-grid">
-    <div class="tool-group reveal">
-      <h3>🔥 核心</h3>
-      <div class="tool-item"><code>web_persistent_start</code><span>启动项目 + 打开浏览器预览</span></div>
-      <div class="tool-item"><code>web_persistent_add</code><span>执行 manim 代码（最常用）</span></div>
-      <div class="tool-item"><code>web_persistent_play</code><span>快捷播放动画</span></div>
-      <div class="tool-item"><code>web_persistent_mobject</code><span>快捷创建图形</span></div>
-    </div>
-    <div class="tool-group reveal">
-      <h3>👁️ 预览</h3>
-      <div class="tool-item"><code>web_persistent_frame</code><span>查看当前帧</span></div>
-      <div class="tool-item"><code>web_persistent_capture</code><span>高质量截图</span></div>
-      <div class="tool-item"><code>web_persistent_render_video</code><span>渲染 mp4 / gif / webm</span></div>
-    </div>
-    <div class="tool-group reveal">
-      <h3>⚙️ 管理</h3>
-      <div class="tool-item"><code>web_persistent_export</code><span>导出 .py 文件</span></div>
-      <div class="tool-item"><code>web_persistent_reset</code><span>重置场景</span></div>
-      <div class="tool-item"><code>web_persistent_status</code><span>查询状态</span></div>
-      <div class="tool-item"><code>web_persistent_list</code><span>列出所有项目</span></div>
-      <div class="tool-item"><code>web_persistent_stop</code><span>停止会话</span></div>
-    </div>
-  </div>
-</section>
+        <div class="hero-buttons">
+            <a href="#quickstart" class="btn btn-primary">⚡ 快速上手</a>
+            <a href="https://github.com/1Cyrvox/manim-mcpweb" class="btn btn-secondary" target="_blank">GitHub ↗</a>
+            <a href="https://pypi.org/project/manim-web-mcp/" class="btn btn-secondary" target="_blank">PyPI ↗</a>
+        </div>
 
-<!-- Sandbox -->
-<section class="section" id="sandbox">
-  <div class="section-center reveal">
-    <div class="section-tag">🛡️ 安全</div>
-    <h2 class="section-title">沙箱安全</h2>
-    <p class="section-sub">三级执行策略，AI 生成代码安全可控</p>
-  </div>
-  <div class="sandbox-grid">
-    <div class="sandbox-card strict-card reveal">
-      <div class="level strict">strict</div>
-      <div class="tag">默认 · 最安全</div>
-      <p>禁止文件 I/O、import、exec</p>
-    </div>
-    <div class="sandbox-card relaxed-card reveal">
-      <div class="level relaxed">relaxed</div>
-      <div class="tag">需要读写文件时</div>
-      <p>仅项目目录 · 白名单 import</p>
-    </div>
-    <div class="sandbox-card full-card reveal">
-      <div class="level full">full</div>
-      <div class="tag">完全信任</div>
-      <p>全部权限 · 危险操作检测</p>
-    </div>
-  </div>
-</section>
+        <div class="hero-stats">
+            <div class="stat-item">
+                <span class="stat-val" data-count="16">0</span>
+                <span class="stat-label">MCP 工具</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-val" data-count="3">0</span>
+                <span class="stat-label">安全级别</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-val" data-count="6">0</span>
+                <span class="stat-label">导出格式</span>
+            </div>
+        </div>
+    </section>
 
-<!-- Requirements -->
-<section class="section" id="requirements">
-  <div class="section-center reveal">
-    <div class="section-tag">📋 依赖</div>
-    <h2 class="section-title">系统依赖</h2>
-    <p class="section-sub">安装 manim-web-mcp 前，请确保以下依赖已就绪</p>
-  </div>
-  <div class="req-grid">
-    <div class="req-item reveal">
-      <div class="req-icon">🐍</div>
-      <div class="req-text"><h4>Python 3.12+</h4><p>需要 Python 3.12 或更高版本</p></div>
-    </div>
-    <div class="req-item reveal">
-      <div class="req-icon">🎬</div>
-      <div class="req-text"><h4>ffmpeg</h4><p>视频编码与导出</p></div>
-    </div>
-    <div class="req-item reveal">
-      <div class="req-icon">✏️</div>
-      <div class="req-text"><h4>Cairo + Pango</h4><p>矢量渲染与文字排版</p></div>
-    </div>
-    <div class="req-item reveal">
-      <div class="req-icon">📐</div>
-      <div class="req-text"><h4>TeX Live（可选）</h4><p>LaTeX 数学公式渲染</p></div>
-    </div>
-  </div>
-</section>
+    <!-- ===== Demos (保留原有 GIF) ===== -->
+    <section class="section" id="demos">
+        <div class="section-center reveal">
+            <div class="section-tag">✨ 演示</div>
+            <h2 class="section-title">核心功能演示</h2>
+            <p class="section-sub">AI 一句话 → 代码自动生成 → 浏览器实时预览 → 一键导出</p>
+        </div>
+        <div class="demo-grid">
+            <!-- 6 个卡片，内容完整保留 -->
+            <div class="demo-card reveal">
+                <div class="card-header">
+                    <div class="card-icon">🔷</div>
+                    <div class="card-title"><h4>图形创建与变换</h4></div>
+                    <div class="card-badge">核心</div>
+                </div>
+                <div class="img-wrap"><img src="https://raw.githubusercontent.com/1Cyrvox/manim-mcpweb/main/docs/demo_shapes.gif" alt="图形变换" loading="lazy"></div>
+                <div class="card-code">
+                    <div><span class="mcp-tool">web_persistent_add</span> <span class="mcp-arg">("c = Circle(color=BLUE)")</span></div>
+                    <div><span class="mcp-tool">web_persistent_add</span> <span class="mcp-arg">("self.play(Create(c))")</span></div>
+                    <div><span class="mcp-comment"># → 圆形渐入动画</span></div>
+                </div>
+            </div>
+            <div class="demo-card reveal">
+                <div class="card-header">
+                    <div class="card-icon">📐</div>
+                    <div class="card-title"><h4>数学公式渲染</h4></div>
+                    <div class="card-badge">核心</div>
+                </div>
+                <div class="img-wrap"><img src="https://raw.githubusercontent.com/1Cyrvox/manim-mcpweb/main/docs/demo_math.gif" alt="数学公式" loading="lazy"></div>
+                <div class="card-code">
+                    <div><span class="mcp-tool">web_persistent_add</span> <span class="mcp-arg">("eq = MathTex('E=mc^2')")</span></div>
+                    <div><span class="mcp-tool">web_persistent_add</span> <span class="mcp-arg">("self.play(Write(eq))")</span></div>
+                    <div><span class="mcp-comment"># → LaTeX 公式书写动画</span></div>
+                </div>
+            </div>
+            <div class="demo-card reveal">
+                <div class="card-header">
+                    <div class="card-icon">📈</div>
+                    <div class="card-title"><h4>函数图像绘制</h4></div>
+                    <div class="card-badge">核心</div>
+                </div>
+                <div class="img-wrap"><img src="https://raw.githubusercontent.com/1Cyrvox/manim-mcpweb/main/docs/demo_graph.gif" alt="函数图像" loading="lazy"></div>
+                <div class="card-code">
+                    <div><span class="mcp-tool">web_persistent_add</span> <span class="mcp-arg">("axes = Axes()")</span></div>
+                    <div><span class="mcp-tool">web_persistent_add</span> <span class="mcp-arg">("graph = axes.plot(lambda x: x**2)")</span></div>
+                    <div><span class="mcp-comment"># → 坐标系 + 函数曲线</span></div>
+                </div>
+            </div>
+            <div class="demo-card reveal">
+                <div class="card-header">
+                    <div class="card-icon">🎬</div>
+                    <div class="card-title"><h4>动画编排组合</h4></div>
+                    <div class="card-badge">核心</div>
+                </div>
+                <div class="img-wrap"><img src="https://raw.githubusercontent.com/1Cyrvox/manim-mcpweb/main/docs/demo_composite.gif" alt="综合动画" loading="lazy"></div>
+                <div class="card-code">
+                    <div><span class="mcp-tool">web_persistent_add</span> <span class="mcp-arg">("self.play(Transform(sq, c))")</span></div>
+                    <div><span class="mcp-tool">web_persistent_play</span> <span class="mcp-arg">("FadeOut(sq)")</span></div>
+                    <div><span class="mcp-comment"># → 图形变换 + 淡出</span></div>
+                </div>
+            </div>
+            <div class="demo-card reveal">
+                <div class="card-header">
+                    <div class="card-icon">📸</div>
+                    <div class="card-title"><h4>实时截图捕获</h4></div>
+                    <div class="card-badge">预览</div>
+                </div>
+                <div class="img-wrap"><img src="https://raw.githubusercontent.com/1Cyrvox/manim-mcpweb/main/docs/demo_shapes.gif" alt="截图捕获" loading="lazy"></div>
+                <div class="card-code">
+                    <div><span class="mcp-tool">web_persistent_capture</span> <span class="mcp-arg">(format="png")</span></div>
+                    <div><span class="mcp-comment"># → 高质量截图，即时预览</span></div>
+                    <div><span class="mcp-tool">web_persistent_frame</span> <span class="mcp-arg">()</span></div>
+                </div>
+            </div>
+            <div class="demo-card reveal">
+                <div class="card-header">
+                    <div class="card-icon">🎥</div>
+                    <div class="card-title"><h4>视频渲染导出</h4></div>
+                    <div class="card-badge">导出</div>
+                </div>
+                <div class="img-wrap"><img src="https://raw.githubusercontent.com/1Cyrvox/manim-mcpweb/main/docs/demo_composite.gif" alt="视频导出" loading="lazy"></div>
+                <div class="card-code">
+                    <div><span class="mcp-tool">web_persistent_render_video</span> <span class="mcp-arg">(format="mp4")</span></div>
+                    <div><span class="mcp-tool">web_persistent_render_video</span> <span class="mcp-arg">(format="gif")</span></div>
+                    <div><span class="mcp-comment"># → mp4 / gif / webm 多格式</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-<!-- CTA -->
-<section class="cta-section reveal">
-  <h2>开始创作你的第一个 AI 动画</h2>
-  <p>一行命令安装，30 秒上手，无限可能</p>
-  <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
-    <a href="#quickstart" class="btn btn-primary">⚡ 立即开始</a>
-    <a href="https://github.com/1Cyrvox/manim-mcpweb" class="btn btn-secondary" target="_blank">查看源码 ↗</a>
-  </div>
-</section>
+    <!-- ===== Features ===== -->
+    <section class="section" id="features">
+        <div class="section-center reveal">
+            <div class="section-tag">🚀 特性</div>
+            <h2 class="section-title">为什么选 manim-web</h2>
+            <p class="section-sub">AI 驱动 · 浏览器实时预览 · 会话持久化 · 沙箱安全</p>
+        </div>
+        <div class="features">
+            <div class="feature reveal">
+                <div class="icon">🤖</div>
+                <h3>AI 驱动 · MCP 协议</h3>
+                <p>基于 Model Context Protocol 标准，与 Claude、Cursor、Windsurf 等 AI 客户端无缝集成。说一句话，AI 帮你写 manim 代码并渲染。</p>
+            </div>
+            <div class="feature reveal">
+                <div class="icon">👁️</div>
+                <h3>浏览器实时预览</h3>
+                <p>WebSocket 实时推送渲染帧到浏览器，代码即预览，增量渲染秒级响应。告别 CLI 反复渲染的痛苦循环。</p>
+            </div>
+            <div class="feature reveal">
+                <div class="icon">💾</div>
+                <h3>会话跨对话保持</h3>
+                <p>场景状态持久化到磁盘，AI 对话结束后场景不丢失。下次对话无缝续接，多项目并行互不干扰。</p>
+            </div>
+            <div class="feature reveal">
+                <div class="icon">🔒</div>
+                <h3>三级沙箱安全</h3>
+                <p>strict / relaxed / full 三级代码执行策略，危险操作拦截。AI 生成代码安全可控，默认最安全模式。</p>
+            </div>
+            <div class="feature reveal">
+                <div class="icon">📦</div>
+                <h3>一键安装 · 内置 manim</h3>
+                <p>pip install 一步到位，内置优化版 manim v0.20.2。无需单独安装 manim，依赖链自动处理。</p>
+            </div>
+            <div class="feature reveal">
+                <div class="icon">🎬</div>
+                <h3>多格式导出</h3>
+                <p>支持 mp4 / gif / webm 视频导出，高质量截图捕获。从创作到分享一气呵成。</p>
+            </div>
+        </div>
+    </section>
 
-<!-- Footer -->
-<footer class="footer">
-  <div class="footer-links">
-    <a href="https://github.com/1Cyrvox/manim-mcpweb" target="_blank">GitHub</a>
-    <a href="https://pypi.org/project/manim-web-mcp/" target="_blank">PyPI</a>
-    <a href="https://github.com/1Cyrvox/manim-mcpweb/issues" target="_blank">Issues</a>
-  </div>
-  <p>manim-web-mcp · MIT License</p>
-  <p style="margin-top:6px;color:var(--text3)">每一行代码都值得被守护，每一个 idea 都值得被实现</p>
-</footer>
+    <!-- ===== Comparison ===== -->
+    <section class="section" id="compare">
+        <div class="section-center reveal">
+            <div class="section-tag">📊 对比</div>
+            <h2 class="section-title">对比其他方案</h2>
+            <p class="section-sub">manim-web 是唯一同时支持 AI 驱动 + 浏览器预览 + 会话持久化的方案</p>
+        </div>
+        <div class="table-wrap reveal">
+            <table>
+                <thead><tr><th></th><th>manim-web</th><th>传统 CLI</th><th>VSCode 插件</th><th>在线 Playground</th></tr></thead>
+                <tbody>
+                    <tr><td>AI 驱动</td><td class="yes">✅ MCP</td><td class="no">❌</td><td class="no">❌</td><td class="no">❌</td></tr>
+                    <tr><td>浏览器实时预览</td><td class="yes">✅ WebSocket</td><td class="no">❌</td><td class="partial">仅 VSCode</td><td class="yes">✅</td></tr>
+                    <tr><td>会话跨对话保持</td><td class="yes">✅ 持久化</td><td class="no">❌</td><td class="no">❌</td><td class="no">❌</td></tr>
+                    <tr><td>多项目并行</td><td class="yes">✅ 独立场景</td><td class="no">❌</td><td class="no">❌</td><td class="no">❌</td></tr>
+                    <tr><td>沙箱安全</td><td class="yes">✅ 三级策略</td><td class="no">❌</td><td class="no">❌</td><td class="no">❌</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
 
-<!-- Back to Top -->
-<div class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</div>
+    <!-- ===== Quickstart ===== -->
+    <section class="section" id="quickstart">
+        <div class="section-center reveal">
+            <div class="section-tag">⚡ 上手</div>
+            <h2 class="section-title">30 秒上手</h2>
+            <p class="section-sub">三步开始创作 AI 动画</p>
+        </div>
+        <div class="steps">
+            <div class="step reveal">
+                <div class="step-num">1</div>
+                <div class="step-content">
+                    <h4>安装</h4>
+                    <p>确保 Python 3.12+ 已安装，然后：</p>
+                    <pre><code>pip install manim-web-mcp</code></pre>
+                </div>
+            </div>
+            <div class="step reveal">
+                <div class="step-num">2</div>
+                <div class="step-content">
+                    <h4>启动</h4>
+                    <p>运行命令，浏览器自动打开预览页面：</p>
+                    <pre><code>manim-web-mcp</code></pre>
+                </div>
+            </div>
+            <div class="step reveal">
+                <div class="step-num">3</div>
+                <div class="step-content">
+                    <h4>创作</h4>
+                    <p>在 AI 客户端中用 MCP 工具生成动画：</p>
+                    <pre><code>web_persistent_start(project="demo")
+        web_persistent_add(code="c = Circle(radius=1, color=BLUE)")
+        web_persistent_add(code="self.play(Create(c))")</code></pre>
+                </div>
+            </div>
+        </div>
+    </section>
 
-<script>
-// Typing effect
-(function(){
-  const texts=['AI × Math Animation — 说一句话，AI 帮你写代码、渲染、预览','Browser-first manim — 代码即预览，增量渲染秒级响应','MCP Protocol — 与 Claude、Cursor、Windsurf 无缝集成'];
-  const el=document.getElementById('heroSub');
-  let ti=0,ci=0,deleting=false;
-  function type(){
-    const t=texts[ti];
-    if(!deleting){
-      el.innerHTML=t.slice(0,ci+1)+'<span class="cursor"></span>';
-      ci++;
-      if(ci>=t.length){setTimeout(()=>{deleting=true;type()},2000);return}
-      setTimeout(type,50+Math.random()*40);
-    }else{
-      el.innerHTML=t.slice(0,ci)+'<span class="cursor"></span>';
-      ci--;
-      if(ci<=0){deleting=false;ti=(ti+1)%texts.length;setTimeout(type,400);return}
-      setTimeout(type,25);
-    }
-  }
-  setTimeout(type,800);
-})();
+    <!-- ===== MCP Tools ===== -->
+    <section class="section" id="tools">
+        <div class="section-center reveal">
+            <div class="section-tag">🔧 工具</div>
+            <h2 class="section-title">MCP 工具一览</h2>
+            <p class="section-sub">16 个精心设计的 MCP 工具，覆盖动画创作全流程</p>
+        </div>
+        <div class="tools-grid">
+            <div class="tool-group reveal">
+                <h3>🔥 核心</h3>
+                <div class="tool-item"><code>web_persistent_start</code><span>启动项目 + 打开浏览器预览</span></div>
+                <div class="tool-item"><code>web_persistent_add</code><span>执行 manim 代码（最常用）</span></div>
+                <div class="tool-item"><code>web_persistent_play</code><span>快捷播放动画</span></div>
+                <div class="tool-item"><code>web_persistent_mobject</code><span>快捷创建图形</span></div>
+            </div>
+            <div class="tool-group reveal">
+                <h3>👁️ 预览</h3>
+                <div class="tool-item"><code>web_persistent_frame</code><span>查看当前帧</span></div>
+                <div class="tool-item"><code>web_persistent_capture</code><span>高质量截图</span></div>
+                <div class="tool-item"><code>web_persistent_render_video</code><span>渲染 mp4 / gif / webm</span></div>
+            </div>
+            <div class="tool-group reveal">
+                <h3>⚙️ 管理</h3>
+                <div class="tool-item"><code>web_persistent_export</code><span>导出 .py 文件</span></div>
+                <div class="tool-item"><code>web_persistent_reset</code><span>重置场景</span></div>
+                <div class="tool-item"><code>web_persistent_status</code><span>查询状态</span></div>
+                <div class="tool-item"><code>web_persistent_list</code><span>列出所有项目</span></div>
+                <div class="tool-item"><code>web_persistent_stop</code><span>停止会话</span></div>
+            </div>
+        </div>
+    </section>
 
-// Copy install command
-function copyInstall(){
-  navigator.clipboard.writeText('pip install manim-web-mcp').then(()=>{
-    const icon=document.querySelector('.copy-icon');
-    icon.textContent='✅';
-    setTimeout(()=>{icon.textContent='📋'},1500);
-  });
-}
+    <!-- ===== Sandbox ===== -->
+    <section class="section" id="sandbox">
+        <div class="section-center reveal">
+            <div class="section-tag">🛡️ 安全</div>
+            <h2 class="section-title">沙箱安全</h2>
+            <p class="section-sub">三级执行策略，AI 生成代码安全可控</p>
+        </div>
+        <div class="sandbox-grid">
+            <div class="sandbox-card strict-card reveal">
+                <div class="level strict">strict</div>
+                <div class="tag">默认 · 最安全</div>
+                <p>禁止文件 I/O、import、exec</p>
+            </div>
+            <div class="sandbox-card relaxed-card reveal">
+                <div class="level relaxed">relaxed</div>
+                <div class="tag">需要读写文件时</div>
+                <p>仅项目目录 · 白名单 import</p>
+            </div>
+            <div class="sandbox-card full-card reveal">
+                <div class="level full">full</div>
+                <div class="tag">完全信任</div>
+                <p>全部权限 · 危险操作检测</p>
+            </div>
+        </div>
+    </section>
 
-// Scroll reveal
-const obs=new IntersectionObserver((entries)=>{
-  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}})
-},{threshold:0.1,rootMargin:'0px 0px -40px 0px'});
-document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+    <!-- ===== Requirements ===== -->
+    <section class="section" id="requirements">
+        <div class="section-center reveal">
+            <div class="section-tag">📋 依赖</div>
+            <h2 class="section-title">系统依赖</h2>
+            <p class="section-sub">安装 manim-web-mcp 前，请确保以下依赖已就绪</p>
+        </div>
+        <div class="req-grid">
+            <div class="req-item reveal">
+                <div class="req-icon">🐍</div>
+                <div class="req-text"><h4>Python 3.12+</h4><p>需要 Python 3.12 或更高版本</p></div>
+            </div>
+            <div class="req-item reveal">
+                <div class="req-icon">🎬</div>
+                <div class="req-text"><h4>ffmpeg</h4><p>视频编码与导出</p></div>
+            </div>
+            <div class="req-item reveal">
+                <div class="req-icon">✏️</div>
+                <div class="req-text"><h4>Cairo + Pango</h4><p>矢量渲染与文字排版</p></div>
+            </div>
+            <div class="req-item reveal">
+                <div class="req-icon">📐</div>
+                <div class="req-text"><h4>TeX Live（可选）</h4><p>LaTeX 数学公式渲染</p></div>
+            </div>
+        </div>
+    </section>
 
-// Nav scroll effect
-const nav=document.getElementById('nav');
-window.addEventListener('scroll',()=>{
-  nav.classList.toggle('scrolled',window.scrollY>50);
-  const bt=document.getElementById('backTop');
-  bt.classList.toggle('show',window.scrollY>400);
-});
+    <!-- ===== CTA ===== -->
+    <section class="cta-section reveal">
+        <h2>开始创作你的第一个 AI 动画</h2>
+        <p>一行命令安装，30 秒上手，无限可能</p>
+        <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+            <a href="#quickstart" class="btn btn-primary">⚡ 立即开始</a>
+            <a href="https://github.com/1Cyrvox/manim-mcpweb" class="btn btn-secondary" target="_blank">查看源码 ↗</a>
+        </div>
+    </section>
 
-// Counter animation
-const counterObs=new IntersectionObserver((entries)=>{
-  entries.forEach(e=>{
-    if(e.isIntersecting){
-      const el=e.target;
-      const target=parseInt(el.dataset.count);
-      let cur=0;
-      const step=Math.ceil(target/30);
-      const timer=setInterval(()=>{
-        cur+=step;
-        if(cur>=target){cur=target;clearInterval(timer)}
-        el.textContent=cur;
-      },40);
-      counterObs.unobserve(el);
-    }
-  });
-},{threshold:0.5});
-document.querySelectorAll('[data-count]').forEach(el=>counterObs.observe(el));
+    <!-- ===== Footer ===== -->
+    <footer class="footer">
+        <div class="footer-links">
+            <a href="https://github.com/1Cyrvox/manim-mcpweb" target="_blank">GitHub</a>
+            <a href="https://pypi.org/project/manim-web-mcp/" target="_blank">PyPI</a>
+            <a href="https://github.com/1Cyrvox/manim-mcpweb/issues" target="_blank">Issues</a>
+        </div>
+        <p>manim-web-mcp · MIT License</p>
+        <p style="margin-top:4px;color:var(--text3)">每一行代码都值得被守护，每一个 idea 都值得被实现</p>
+        <div class="credit">背景插画来自 <a href="https://pixabay.com/users/andsproject-26081561/" target="_blank" rel="noopener">andsproject</a> · <a href="https://pixabay.com" target="_blank" rel="noopener">Pixabay</a> · CC0 免费商用</div>
+    </footer>
 
-// Premium Particles + Falling Leaves
-(function(){
-  const canvas=document.getElementById('particles');
-  const ctx=canvas.getContext('2d');
-  let w,h;
-  let particles=[],leaves=[];
-  let mouse={x:-9999,y:-9999,active:false};
-  const P_COUNT=80,L_COUNT=25,CONNECT_DIST=140,MOUSE_R=220;
-  const pColors=['124,92,252','96,165,250','34,211,238','139,92,246','167,139,250','236,72,153'];
-  const leafColors=['#7c5cfc','#60a5fa','#22d3ee','#a78bfa','#ec4899','#f472b6','#34d399','#fbbf24'];
-  function resize(){w=canvas.width=window.innerWidth;h=canvas.height=window.innerHeight}
-  resize();window.addEventListener('resize',resize);
-  document.addEventListener('mousemove',e=>{mouse.x=e.clientX;mouse.y=e.clientY;mouse.active=true});
-  document.addEventListener('mouseleave',()=>{mouse.active=false;mouse.x=-9999;mouse.y=-9999});
-  document.addEventListener('touchmove',e=>{const t=e.touches[0];mouse.x=t.clientX;mouse.y=t.clientY;mouse.active=true},{passive:true});
-  document.addEventListener('touchend',()=>{mouse.active=false;mouse.x=-9999;mouse.y=-9999});
+    <!-- ===== Back to Top ===== -->
+    <div class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</div>
 
-  // Particle class - bright glowing dots
-  class Particle{
-    constructor(){this.init()}
-    init(){
-      this.x=Math.random()*w;this.y=Math.random()*h;
-      this.vx=(Math.random()-.5)*.6;this.vy=(Math.random()-.5)*.6;
-      this.r=Math.random()*2.5+1;this.baseA=Math.random()*.5+.2;this.a=this.baseA;
-      this.color=pColors[Math.floor(Math.random()*pColors.length)];
-      this.phase=Math.random()*Math.PI*2;this.pSpeed=.01+Math.random()*.025;
-      this.trail=[];
-    }
-    update(){
-      this.phase+=this.pSpeed;
-      this.a=this.baseA+Math.sin(this.phase)*.18;
-      // gentle drift
-      this.vx+=Math.sin(this.phase*.3)*.003;
-      this.vy+=Math.cos(this.phase*.2)*.003;
-      // mouse repulsion
-      if(mouse.active){
-        const dx=this.x-mouse.x,dy=this.y-mouse.y;
-        const d=Math.sqrt(dx*dx+dy*dy);
-        if(d<MOUSE_R&&d>1){
-          const f=(1-d/MOUSE_R)*.12;
-          this.vx+=dx/d*f;this.vy+=dy/d*f;
-          this.a=Math.min(1,this.baseA+.45*(1-d/MOUSE_R));
+    <script>
+        // ============================================================
+        // 1. 打字机效果
+        // ============================================================
+        (function() {
+            const texts = [
+                'AI × Math Animation — 说一句话，AI 帮你写代码、渲染、预览',
+                'Browser-first manim — 代码即预览，增量渲染秒级响应',
+                'MCP Protocol — 与 Claude、Cursor、Windsurf 无缝集成'
+            ];
+            const el = document.getElementById('heroSub');
+            let ti = 0,
+                ci = 0,
+                deleting = false;
+
+            function type() {
+                const t = texts[ti];
+                if (!deleting) {
+                    el.innerHTML = t.slice(0, ci + 1) + '<span class="cursor"></span>';
+                    ci++;
+                    if (ci >= t.length) { setTimeout(() => { deleting = true;
+                            type(); }, 2000); return; }
+                    setTimeout(type, 50 + Math.random() * 40);
+                } else {
+                    el.innerHTML = t.slice(0, ci) + '<span class="cursor"></span>';
+                    ci--;
+                    if (ci <= 0) { deleting = false;
+                        ti = (ti + 1) % texts.length;
+                        setTimeout(type, 400); return; }
+                    setTimeout(type, 25);
+                }
+            }
+            setTimeout(type, 600);
+        })();
+
+        // ============================================================
+        // 2. 复制安装命令
+        // ============================================================
+        function copyInstall() {
+            navigator.clipboard.writeText('pip install manim-web-mcp').then(() => {
+                const icon = document.querySelector('.hero-install .copy-icon');
+                icon.textContent = '✅';
+                setTimeout(() => { icon.textContent = '📋'; }, 1600);
+            });
         }
-      }
-      this.vx*=.982;this.vy*=.982;
-      const sp=Math.sqrt(this.vx*this.vx+this.vy*this.vy);
-      if(sp>3){this.vx*=3/sp;this.vy*=3/sp}
-      this.trail.push({x:this.x,y:this.y});
-      if(this.trail.length>6)this.trail.shift();
-      this.x+=this.vx;this.y+=this.vy;
-      if(this.x<-30)this.x=w+30;if(this.x>w+30)this.x=-30;
-      if(this.y<-30)this.y=h+30;if(this.y>h+30)this.y=-30;
-    }
-    draw(){
-      // trail
-      for(let i=0;i<this.trail.length;i++){
-        const t=this.trail[i],ta=this.a*(i/this.trail.length)*.2;
-        ctx.beginPath();ctx.arc(t.x,t.y,this.r*.6,0,Math.PI*2);
-        ctx.fillStyle=`rgba(${this.color},${ta})`;ctx.fill();
-      }
-      // outer glow
-      const gr=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,this.r*5);
-      gr.addColorStop(0,`rgba(${this.color},${this.a*.35})`);
-      gr.addColorStop(.5,`rgba(${this.color},${this.a*.08})`);
-      gr.addColorStop(1,`rgba(${this.color},0)`);
-      ctx.fillStyle=gr;ctx.beginPath();ctx.arc(this.x,this.y,this.r*5,0,Math.PI*2);ctx.fill();
-      // core
-      ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
-      ctx.fillStyle=`rgba(${this.color},${this.a})`;ctx.fill();
-      // bright center
-      ctx.beginPath();ctx.arc(this.x,this.y,this.r*.4,0,Math.PI*2);
-      ctx.fillStyle=`rgba(255,255,255,${this.a*.6})`;ctx.fill();
-    }
-  }
 
-  // Leaf class - falling leaves with rotation
-  class Leaf{
-    constructor(){this.init(true)}
-    init(first){
-      this.x=Math.random()*(w+200)-100;
-      this.y=first?Math.random()*h:-60-Math.random()*200;
-      this.size=Math.random()*14+8;
-      this.rot=Math.random()*Math.PI*2;
-      this.rotSpeed=(Math.random()-.5)*.03;
-      this.vy=Math.random()*.8+.3;
-      this.vx=(Math.random()-.5)*.4;
-      this.sway=Math.random()*Math.PI*2;
-      this.swaySpeed=.008+Math.random()*.015;
-      this.swayAmp=Math.random()*1.5+.5;
-      this.color=leafColors[Math.floor(Math.random()*leafColors.length)];
-      this.opacity=Math.random()*.35+.15;
-      this.flip=Math.random()*Math.PI*2;
-      this.flipSpeed=.01+Math.random()*.02;
-    }
-    update(){
-      this.sway+=this.swaySpeed;
-      this.flip+=this.flipSpeed;
-      this.x+=this.vx+Math.sin(this.sway)*this.swayAmp;
-      this.y+=this.vy;
-      this.rot+=this.rotSpeed;
-      // mouse interaction - leaves scatter
-      if(mouse.active){
-        const dx=this.x-mouse.x,dy=this.y-mouse.y;
-        const d=Math.sqrt(dx*dx+dy*dy);
-        if(d<180&&d>1){
-          const f=(1-d/180)*2.5;
-          this.vx+=dx/d*f*.08;
-          this.vy+=dy/d*f*.04;
-          this.rotSpeed+=(Math.random()-.5)*.01;
-        }
-      }
-      this.vx*=.99;this.vy*=.995;
-      this.vy=Math.max(.2,this.vy);
-      if(this.y>h+80)this.init(false);
-      if(this.x<-100)this.x=w+50;
-      if(this.x>w+100)this.x=-50;
-    }
-    draw(){
-      ctx.save();
-      ctx.translate(this.x,this.y);
-      ctx.rotate(this.rot);
-      const scaleX=Math.cos(this.flip);
-      ctx.scale(scaleX,1);
-      ctx.globalAlpha=this.opacity;
-      // draw leaf shape
-      ctx.beginPath();
-      ctx.moveTo(0,-this.size);
-      ctx.bezierCurveTo(this.size*.6,-this.size*.3,this.size*.5,this.size*.3,0,this.size);
-      ctx.bezierCurveTo(-this.size*.5,this.size*.3,-this.size*.6,-this.size*.3,0,-this.size);
-      ctx.fillStyle=this.color;
-      ctx.fill();
-      // leaf vein
-      ctx.beginPath();
-      ctx.moveTo(0,-this.size*.8);
-      ctx.lineTo(0,this.size*.7);
-      ctx.strokeStyle=`rgba(255,255,255,.15)`;
-      ctx.lineWidth=.8;
-      ctx.stroke();
-      // side veins
-      for(let i=-2;i<=2;i++){
-        if(i===0)continue;
-        const yy=i*this.size*.25;
-        ctx.beginPath();ctx.moveTo(0,yy);
-        ctx.lineTo(this.size*.3*Math.sign(i),yy-this.size*.15);
-        ctx.strokeStyle=`rgba(255,255,255,.08)`;ctx.lineWidth=.5;ctx.stroke();
-      }
-      ctx.globalAlpha=1;
-      ctx.restore();
-    }
-  }
+        // ============================================================
+        // 3. Scroll Reveal
+        // ============================================================
+        const obs = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    e.target.classList.add('visible');
+                    obs.unobserve(e.target);
+                }
+            });
+        }, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
+        document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 
-  for(let i=0;i<P_COUNT;i++)particles.push(new Particle());
-  for(let i=0;i<L_COUNT;i++)leaves.push(new Leaf());
+        // ============================================================
+        // 4. Nav & BackTop
+        // ============================================================
+        const nav = document.getElementById('nav');
+        const backTop = document.getElementById('backTop');
+        window.addEventListener('scroll', () => {
+            const y = window.scrollY;
+            nav.classList.toggle('scrolled', y > 40);
+            backTop.classList.toggle('show', y > 500);
+        });
 
-  function animate(){
-    ctx.clearRect(0,0,w,h);
-    // draw particle connections
-    for(let i=0;i<particles.length;i++){
-      for(let j=i+1;j<particles.length;j++){
-        const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y;
-        const d=Math.sqrt(dx*dx+dy*dy);
-        if(d<CONNECT_DIST){
-          const a=.12*(1-d/CONNECT_DIST);
-          ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);
-          ctx.lineTo(particles[j].x,particles[j].y);
-          ctx.strokeStyle=`rgba(${particles[i].color},${a})`;ctx.lineWidth=.6;ctx.stroke();
-        }
-      }
-    }
-    // mouse connections + glow
-    if(mouse.active){
-      for(let i=0;i<particles.length;i++){
-        const dx=particles[i].x-mouse.x,dy=particles[i].y-mouse.y;
-        const d=Math.sqrt(dx*dx+dy*dy);
-        if(d<MOUSE_R){
-          const a=.3*(1-d/MOUSE_R);
-          ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);
-          ctx.lineTo(mouse.x,mouse.y);
-          ctx.strokeStyle=`rgba(124,92,252,${a})`;ctx.lineWidth=.8;ctx.stroke();
-        }
-      }
-      // mouse glow
-      const mg=ctx.createRadialGradient(mouse.x,mouse.y,0,mouse.x,mouse.y,MOUSE_R*.7);
-      mg.addColorStop(0,'rgba(124,92,252,.1)');
-      mg.addColorStop(.5,'rgba(139,92,246,.04)');
-      mg.addColorStop(1,'rgba(124,92,252,0)');
-      ctx.fillStyle=mg;ctx.beginPath();ctx.arc(mouse.x,mouse.y,MOUSE_R*.7,0,Math.PI*2);ctx.fill();
-    }
-    // update & draw particles
-    particles.forEach(p=>{p.update();p.draw()});
-    // update & draw leaves
-    leaves.forEach(l=>{l.update();l.draw()});
-    requestAnimationFrame(animate);
-  }
-  animate();
-})();
-</script>
+        // ============================================================
+        // 5. 数字动画
+        // ============================================================
+        const counterObs = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    const el = e.target;
+                    const target = parseInt(el.dataset.count);
+                    let cur = 0;
+                    const step = Math.max(1, Math.ceil(target / 30));
+                    const timer = setInterval(() => {
+                        cur += step;
+                        if (cur >= target) { cur = target;
+                            clearInterval(timer); }
+                        el.textContent = cur;
+                    }, 35);
+                    counterObs.unobserve(el);
+                }
+            });
+        }, { threshold: 0.4 });
+        document.querySelectorAll('[data-count]').forEach(el => counterObs.observe(el));
+
+        // ============================================================
+        // 6. 高级粒子系统 — 全新升级
+        //    核心技术：尾迹、HSL动态、发光、涡旋、连接线、鼠标交互
+        // ============================================================
+        (function() {
+            const canvas = document.getElementById('particles-canvas');
+            const ctx = canvas.getContext('2d');
+            let W, H;
+
+            // ---------- 配置 ----------
+            const CONFIG = {
+                particleCount: 200,
+                trailLength: 14,
+                connectDistance: 180,
+                mouseRadius: 280,
+                glowSize: 6,
+                colorPalette: [
+                    [124, 92, 252],
+                    [96, 165, 250],
+                    [34, 211, 238],
+                    [167, 139, 250],
+                    [244, 114, 182],
+                    [251, 191, 36],
+                    [52, 211, 153],
+                    [251, 146, 60],
+                    [236, 72, 153],
+                    [139, 92, 246]
+                ]
+            };
+
+            // ---------- 状态 ----------
+            let mouse = { x: -9999, y: -9999, active: false };
+            let ripples = [];
+            let particles = [];
+            let time = 0;
+
+            // ---------- 尺寸 ----------
+            function resize() {
+                W = canvas.width = window.innerWidth;
+                H = canvas.height = window.innerHeight;
+            }
+            resize();
+            window.addEventListener('resize', resize);
+
+            // ---------- 鼠标事件 ----------
+            document.addEventListener('mousemove', e => {
+                mouse.x = e.clientX;
+                mouse.y = e.clientY;
+                mouse.active = true;
+            });
+            document.addEventListener('mouseleave', () => {
+                mouse.active = false;
+                mouse.x = -9999;
+                mouse.y = -9999;
+            });
+            document.addEventListener('touchmove', e => {
+                const t = e.touches[0];
+                mouse.x = t.clientX;
+                mouse.y = t.clientY;
+                mouse.active = true;
+            }, { passive: true });
+            document.addEventListener('touchend', () => {
+                mouse.active = false;
+                mouse.x = -9999;
+                mouse.y = -9999;
+            });
+            document.addEventListener('click', (e) => {
+                ripples.push({
+                    x: e.clientX,
+                    y: e.clientY,
+                    radius: 6,
+                    maxRadius: Math.max(W, H) * 0.6,
+                    life: 1.0,
+                    speed: 8 + Math.random() * 6
+                });
+            });
+            document.addEventListener('touchstart', (e) => {
+                const t = e.touches[0];
+                ripples.push({
+                    x: t.clientX,
+                    y: t.clientY,
+                    radius: 6,
+                    maxRadius: Math.max(W, H) * 0.55,
+                    life: 1.0,
+                    speed: 8 + Math.random() * 6
+                });
+            }, { passive: true });
+
+            // ---------- 粒子类 (高级) ----------
+            class Particle {
+                constructor() {
+                    this.reset(true);
+                }
+
+                reset(init = false) {
+                    this.x = Math.random() * W;
+                    this.y = Math.random() * H;
+                    this.vx = (Math.random() - 0.5) * 1.2;
+                    this.vy = (Math.random() - 0.5) * 1.2;
+                    this.baseSize = Math.random() * 4.5 + 1.5;
+                    this.size = this.baseSize;
+                    this.targetSize = this.baseSize;
+                    // HSL 颜色
+                    this.hue = Math.random() * 360;
+                    this.hueSpeed = (Math.random() - 0.5) * 0.8;
+                    this.saturation = 80 + Math.random() * 20;
+                    this.lightness = 60 + Math.random() * 25;
+                    // 生命周期
+                    this.life = 0.7 + Math.random() * 0.3;
+                    this.lifeSpeed = 0.003 + Math.random() * 0.008;
+                    this.phase = Math.random() * Math.PI * 2;
+                    // 尾迹
+                    this.trail = [];
+                    this.trailLength = CONFIG.trailLength + Math.floor(Math.random() * 8);
+                    // 旋转
+                    this.rotation = Math.random() * 360;
+                    this.rotSpeed = (Math.random() - 0.5) * 0.05;
+                    // 波浪
+                    this.waveAmp = 20 + Math.random() * 45;
+                    this.waveFreq = 0.01 + Math.random() * 0.02;
+                    this.wavePhase = Math.random() * Math.PI * 2;
+                    // 发光
+                    this.glowIntensity = 0.4 + Math.random() * 0.6;
+                    // 速度因子
+                    this.speedFactor = 0.9 + Math.random() * 0.5;
+                    // 颜色取自调色板或随机
+                    const pal = CONFIG.colorPalette[Math.floor(Math.random() * CONFIG.colorPalette.length)];
+                    this.colorR = pal[0];
+                    this.colorG = pal[1];
+                    this.colorB = pal[2];
+                    this.usePalette = Math.random() > 0.2;
+                    // 年龄
+                    this.age = 0;
+                    this.maxAge = 500 + Math.random() * 800;
+                    // 是否活跃
+                    this.alive = true;
+                    // 闪烁
+                    this.twinkleSpeed = 1 + Math.random() * 3;
+                    this.twinklePhase = Math.random() * Math.PI * 2;
+                }
+
+                update() {
+                    this.age++;
+                    this.life += this.lifeSpeed;
+                    if (this.life > 1.0) this.life = 0.2;
+                    this.hue += this.hueSpeed;
+                    if (this.hue > 360) this.hue -= 360;
+                    if (this.hue < 0) this.hue += 360;
+
+                    // 波浪运动
+                    const waveX = Math.sin(this.wavePhase + time * this.waveFreq) * this.waveAmp * 0.04;
+                    const waveY = Math.cos(this.wavePhase + time * this.waveFreq * 0.7) * this.waveAmp * 0.04;
+
+                    // 鼠标交互 — 吸引+排斥双模式
+                    if (mouse.active) {
+                        const dx = this.x - mouse.x,
+                            dy = this.y - mouse.y;
+                        const d = Math.sqrt(dx * dx + dy * dy);
+                        const RAD = CONFIG.mouseRadius;
+                        if (d < RAD && d > 0.5) {
+                            const t = 1 - d / RAD;
+                            // 近距离排斥，远距离吸引
+                            const attractDist = RAD * 0.6;
+                            if (d < attractDist) {
+                                // 排斥 — 近处弹开
+                                const force = t * 0.12;
+                                this.vx += (dx / d) * force;
+                                this.vy += (dy / d) * force;
+                            } else {
+                                // 吸引 — 远处拉向鼠标
+                                const force = (1 - t) * 0.04;
+                                this.vx -= (dx / d) * force;
+                                this.vy -= (dy / d) * force;
+                            }
+                            this.targetSize = this.baseSize * (1 + 0.8 * t);
+                        } else {
+                            this.targetSize = this.baseSize;
+                        }
+                    } else {
+                        this.targetSize = this.baseSize;
+                    }
+
+                    // 涟漪交互 — 更强爆发力
+                    for (const rip of ripples) {
+                        const dx = this.x - rip.x,
+                            dy = this.y - rip.y;
+                        const d = Math.sqrt(dx * dx + dy * dy);
+                        if (d < rip.radius + 25 && d > 0.5) {
+                            const force = (1 - d / (rip.radius + 25)) * 0.15 * rip.life;
+                            this.vx += (dx / d) * force;
+                            this.vy += (dy / d) * force;
+                            this.targetSize = this.baseSize * 1.5;
+                        }
+                    }
+
+                    // 速度衰减
+                    this.vx *= 0.985;
+                    this.vy *= 0.985;
+
+                    // 速度限制
+                    const sp = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                    if (sp > 2.5) {
+                        this.vx = (this.vx / sp) * 2.5;
+                        this.vy = (this.vy / sp) * 2.5;
+                    }
+
+                    // 位置更新
+                    this.x += (this.vx + waveX) * this.speedFactor;
+                    this.y += (this.vy + waveY) * this.speedFactor;
+
+                    // 边界环绕
+                    if (this.x < -30) this.x = W + 30;
+                    if (this.x > W + 30) this.x = -30;
+                    if (this.y < -30) this.y = H + 30;
+                    if (this.y > H + 30) this.y = -30;
+
+                    // 大小平滑过渡
+                    this.size += (this.targetSize - this.size) * 0.08;
+
+                    // 旋转
+                    this.rotation += this.rotSpeed * this.speedFactor;
+
+                    // 尾迹
+                    this.trail.push({ x: this.x, y: this.y });
+                    if (this.trail.length > this.trailLength) {
+                        this.trail.shift();
+                    }
+
+                    // 生命周期重生
+                    if (this.age > this.maxAge) {
+                        this.alive = false;
+                    }
+                }
+
+                draw() {
+                    // 闪烁效果
+                    const twinkle = 0.7 + 0.3 * Math.sin(time * this.twinkleSpeed + this.twinklePhase);
+                    const alpha = this.life * twinkle;
+                    if (alpha < 0.02) return;
+
+                    // 尾迹 — 更亮
+                    for (let i = 0; i < this.trail.length - 1; i++) {
+                        const p = this.trail[i];
+                        const n = this.trail[i + 1];
+                        const t = i / this.trail.length;
+                        const trailAlpha = t * alpha * 0.3;
+                        if (trailAlpha < 0.005) continue;
+                        ctx.beginPath();
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(n.x, n.y);
+                        if (this.usePalette) {
+                            ctx.strokeStyle = `rgba(${this.colorR},${this.colorG},${this.colorB},${trailAlpha})`;
+                        } else {
+                            ctx.strokeStyle = `hsla(${this.hue}, ${this.saturation}%, ${this.lightness}%, ${trailAlpha})`;
+                        }
+                        ctx.lineWidth = this.size * 0.8 * t;
+                        ctx.stroke();
+                    }
+
+                    // 外层发光 — 更大更亮
+                    if (this.glowIntensity > 0.1 && this.size > 0.5) {
+                        const glowR = this.size * CONFIG.glowSize * 1.8;
+                        const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, glowR);
+                        const c = this.usePalette ?
+                            `rgba(${this.colorR},${this.colorG},${this.colorB},${alpha * this.glowIntensity * 0.18})` :
+                            `hsla(${this.hue}, ${this.saturation}%, ${this.lightness}%, ${alpha * this.glowIntensity * 0.18})`;
+                        const c2 = this.usePalette ?
+                            `rgba(${this.colorR},${this.colorG},${this.colorB},0)` :
+                            `hsla(${this.hue}, ${this.saturation}%, ${this.lightness}%, 0)`;
+                        grad.addColorStop(0, c);
+                        grad.addColorStop(0.3, c);
+                        grad.addColorStop(1, c2);
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, glowR, 0, Math.PI * 2);
+                        ctx.fillStyle = grad;
+                        ctx.fill();
+                    }
+
+                    // 粒子本体
+                    ctx.save();
+                    ctx.translate(this.x, this.y);
+                    ctx.rotate(this.rotation * Math.PI / 180);
+
+                    const r = this.size;
+                    const color = this.usePalette ?
+                        `rgba(${this.colorR},${this.colorG},${this.colorB},${alpha})` :
+                        `hsla(${this.hue}, ${this.saturation}%, ${this.lightness}%, ${alpha})`;
+
+                    // 主圆 — 更亮渐变
+                    const grad2 = ctx.createRadialGradient(-r * 0.2, -r * 0.2, 0, 0, 0, r);
+                    const bright = this.usePalette ?
+                        `rgba(255,255,255,${alpha * 0.6})` :
+                        `hsla(0, 0%, 100%, ${alpha * 0.6})`;
+                    grad2.addColorStop(0, bright);
+                    grad2.addColorStop(0.3, color);
+                    grad2.addColorStop(1, color.replace(/[\d.]+\)$/, '0.15)'));
+
+                    ctx.beginPath();
+                    ctx.arc(0, 0, r, 0, Math.PI * 2);
+                    ctx.fillStyle = grad2;
+                    ctx.fill();
+
+                    // 高光 — 更亮
+                    ctx.beginPath();
+                    ctx.arc(-r * 0.2, -r * 0.3, r * 0.35, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255,255,255,${alpha * 0.4})`;
+                    ctx.fill();
+
+                    ctx.restore();
+
+                    // 小光晕 — 更亮
+                    if (this.size > 0.8) {
+                        const haloR = this.size * 5;
+                        const grad3 = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, haloR);
+                        const c3 = this.usePalette ?
+                            `rgba(${this.colorR},${this.colorG},${this.colorB},${alpha * 0.06})` :
+                            `hsla(${this.hue}, ${this.saturation}%, ${this.lightness}%, ${alpha * 0.06})`;
+                        grad3.addColorStop(0, c3);
+                        grad3.addColorStop(1, 'rgba(0,0,0,0)');
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, haloR, 0, Math.PI * 2);
+                        ctx.fillStyle = grad3;
+                        ctx.fill();
+                    }
+                }
+
+                isAlive() {
+                    return this.alive;
+                }
+            }
+
+            // ---------- 初始化粒子 ----------
+            function initParticles() {
+                particles = [];
+                for (let i = 0; i < CONFIG.particleCount; i++) {
+                    particles.push(new Particle());
+                }
+            }
+            initParticles();
+
+            // ---------- 重生粒子 ----------
+            function respawnParticle(p) {
+                p.x = Math.random() * W;
+                p.y = Math.random() * H;
+                p.vx = (Math.random() - 0.5) * 0.6;
+                p.vy = (Math.random() - 0.5) * 0.6;
+                p.baseSize = Math.random() * 2.8 + 0.8;
+                p.targetSize = p.baseSize;
+                p.hue = Math.random() * 360;
+                p.hueSpeed = (Math.random() - 0.5) * 0.4;
+                p.life = 0.6 + Math.random() * 0.4;
+                p.age = 0;
+                p.maxAge = 400 + Math.random() * 600;
+                p.trail = [];
+                p.alive = true;
+                p.rotation = Math.random() * 360;
+                p.rotSpeed = (Math.random() - 0.5) * 0.03;
+                p.waveAmp = 15 + Math.random() * 35;
+                p.waveFreq = 0.008 + Math.random() * 0.015;
+                p.wavePhase = Math.random() * Math.PI * 2;
+                p.glowIntensity = 0.25 + Math.random() * 0.5;
+                p.speedFactor = 0.8 + Math.random() * 0.4;
+                const pal = CONFIG.colorPalette[Math.floor(Math.random() * CONFIG.colorPalette.length)];
+                p.colorR = pal[0];
+                p.colorG = pal[1];
+                p.colorB = pal[2];
+                p.usePalette = Math.random() > 0.3;
+                p.saturation = 70 + Math.random() * 30;
+                p.lightness = 55 + Math.random() * 25;
+            }
+
+            // ---------- 连接线 ----------
+            function drawConnections() {
+                const maxDist = CONFIG.connectDistance;
+                const maxDistSq = maxDist * maxDist;
+
+                for (let i = 0; i < particles.length; i++) {
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const a = particles[i],
+                            b = particles[j];
+                        if (!a.alive || !b.alive) continue;
+                        const dx = a.x - b.x,
+                            dy = a.y - b.y;
+                        const dSq = dx * dx + dy * dy;
+                        if (dSq < maxDistSq) {
+                            const d = Math.sqrt(dSq);
+                            const t = 1 - d / maxDist;
+                            const alpha = t * t * 0.25;
+                            if (alpha < 0.003) continue;
+                            // 颜色混合
+                            const ca = a.usePalette ? a.colorR : a.hue;
+                            const cb = b.usePalette ? b.colorR : b.hue;
+                            const ga = a.usePalette ? a.colorG : 70;
+                            const gb = b.usePalette ? b.colorG : 70;
+                            const ba = a.usePalette ? a.colorB : 80;
+                            const bb = b.usePalette ? b.colorB : 80;
+                            if (a.usePalette && b.usePalette) {
+                                const r = Math.round(ca * 0.5 + cb * 0.5);
+                                const g = Math.round(ga * 0.5 + gb * 0.5);
+                                const b2 = Math.round(ba * 0.5 + bb * 0.5);
+                                ctx.strokeStyle = `rgba(${r},${g},${b2},${alpha})`;
+                            } else if (a.usePalette) {
+                                ctx.strokeStyle =
+                                `hsla(${b.hue}, ${b.saturation}%, ${b.lightness}%, ${alpha})`;
+                            } else if (b.usePalette) {
+                                ctx.strokeStyle =
+                                `hsla(${a.hue}, ${a.saturation}%, ${a.lightness}%, ${alpha})`;
+                            } else {
+                                const h = (a.hue + b.hue) / 2;
+                                ctx.strokeStyle =
+                                `hsla(${h}, ${(a.saturation + b.saturation)/2}%, ${(a.lightness + b.lightness)/2}%, ${alpha})`;
+                            }
+                            ctx.lineWidth = 0.5 + t * 0.8;
+                            ctx.beginPath();
+                            ctx.moveTo(a.x, a.y);
+                            ctx.lineTo(b.x, b.y);
+                            ctx.stroke();
+                        }
+                    }
+                }
+
+                // 鼠标连接
+                if (mouse.active) {
+                    for (const p of particles) {
+                        if (!p.alive) continue;
+                        const dx = p.x - mouse.x,
+                            dy = p.y - mouse.y;
+                        const dSq = dx * dx + dy * dy;
+                        const maxR = CONFIG.mouseRadius * 0.9;
+                        if (dSq < maxR * maxR) {
+                            const d = Math.sqrt(dSq);
+                            const t = 1 - d / maxR;
+                            const alpha = t * t * 0.3;
+                            if (alpha < 0.003) continue;
+                            const color = p.usePalette ?
+                                `rgba(${p.colorR},${p.colorG},${p.colorB},${alpha})` :
+                                `hsla(${p.hue}, ${p.saturation}%, ${p.lightness}%, ${alpha})`;
+                            ctx.strokeStyle = color;
+                            ctx.lineWidth = 0.5 + t * 0.6;
+                            ctx.beginPath();
+                            ctx.moveTo(p.x, p.y);
+                            ctx.lineTo(mouse.x, mouse.y);
+                            ctx.stroke();
+                        }
+                    }
+                }
+            }
+
+            // ---------- 涟漪 ----------
+            function drawRipples() {
+                for (let i = ripples.length - 1; i >= 0; i--) {
+                    const r = ripples[i];
+                    r.radius += r.speed * 0.8;
+                    r.life -= 0.012;
+                    if (r.life <= 0 || r.radius > r.maxRadius) {
+                        ripples.splice(i, 1);
+                        continue;
+                    }
+                    const alpha = r.life * 0.4;
+                    ctx.beginPath();
+                    ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2);
+                    ctx.strokeStyle = `rgba(124,92,252,${alpha})`;
+                    ctx.lineWidth = 2.0 * r.life;
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.arc(r.x, r.y, r.radius * 0.6, 0, Math.PI * 2);
+                    ctx.strokeStyle = `rgba(34,211,238,${alpha * 0.6})`;
+                    ctx.lineWidth = 1.2 * r.life;
+                    ctx.stroke();
+                    // 内圈光晕
+                    const grad = ctx.createRadialGradient(r.x, r.y, 0, r.x, r.y, r.radius * 0.5);
+                    grad.addColorStop(0, `rgba(124,92,252,${alpha * 0.05})`);
+                    grad.addColorStop(1, 'rgba(124,92,252,0)');
+                    ctx.beginPath();
+                    ctx.arc(r.x, r.y, r.radius * 0.5, 0, Math.PI * 2);
+                    ctx.fillStyle = grad;
+                    ctx.fill();
+                }
+            }
+
+            // ---------- 主循环 ----------
+            function animate() {
+                time += 0.016;
+                ctx.clearRect(0, 0, W, H);
+
+                // 更新粒子
+                let aliveCount = 0;
+                for (const p of particles) {
+                    if (p.alive) {
+                        p.update();
+                        if (!p.alive) {
+                            respawnParticle(p);
+                        } else {
+                            aliveCount++;
+                        }
+                    } else {
+                        respawnParticle(p);
+                    }
+                }
+
+                // 绘制连接线 (在粒子下方)
+                drawConnections();
+
+                // 绘制粒子
+                for (const p of particles) {
+                    if (p.alive) p.draw();
+                }
+
+                // 绘制涟漪 (在最上层)
+                drawRipples();
+
+                // 鼠标光晕
+                if (mouse.active) {
+                    const grad = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, CONFIG.mouseRadius);
+                    grad.addColorStop(0, 'rgba(124,92,252,0.08)');
+                    grad.addColorStop(0.3, 'rgba(96,165,250,0.05)');
+                    grad.addColorStop(0.6, 'rgba(34,211,238,0.03)');
+                    grad.addColorStop(1, 'rgba(124,92,252,0)');
+                    ctx.beginPath();
+                    ctx.arc(mouse.x, mouse.y, CONFIG.mouseRadius, 0, Math.PI * 2);
+                    ctx.fillStyle = grad;
+                    ctx.fill();
+                }
+
+                requestAnimationFrame(animate);
+            }
+            animate();
+
+            // 窗口变化时重置粒子位置
+            window.addEventListener('resize', () => {
+                resize();
+                // 让粒子平滑过渡到新尺寸
+            });
+        })();
+
+        // ============================================================
+        // 7. 树叶随风飘扬 — 随机位置漂浮，不坠落
+        // ============================================================
+        (function() {
+            const container = document.getElementById('leaves-container');
+            const LEAF_COUNT = 40;
+
+            const shapes = [
+                `<path d="M50,0 C55,20 70,30 95,35 C75,45 70,55 80,85 C60,65 45,65 50,100 C55,65 40,65 20,85 C30,55 25,45 5,35 C30,30 45,20 50,0Z" fill="currentColor"/>`,
+                `<path d="M50,0 C80,15 95,45 90,75 C85,95 65,100 50,100 C35,100 15,95 10,75 C5,45 20,15 50,0Z" fill="currentColor"/>`,
+                `<path d="M50,0 C75,20 90,50 85,80 C80,95 60,100 50,100 C40,100 20,95 15,80 C10,50 25,20 50,0Z" fill="currentColor"/>`,
+                `<path d="M50,5 C65,0 90,10 95,35 C98,55 80,80 50,100 C20,80 2,55 5,35 C10,10 35,0 50,5Z" fill="currentColor"/>`,
+                `<path d="M50,0 C80,20 95,55 85,80 C75,98 55,100 50,100 C45,100 25,98 15,80 C5,55 20,20 50,0Z" fill="currentColor"/>`
+            ];
+            const colors = [
+                '#b8860b', '#cd853f', '#d4a373', '#e7b78a', '#c38d5e',
+                '#7cb342', '#8bc34a', '#9ccc65', '#aed581', '#689f38',
+                '#e67e22', '#d35400', '#c0392b', '#e74c3c', '#f1c40f'
+            ];
+
+            function createLeaf() {
+                const el = document.createElement('div');
+                el.className = 'leaf';
+                const size = 18 + Math.random() * 28;
+                const si = Math.floor(Math.random() * shapes.length);
+                const color = colors[Math.floor(Math.random() * colors.length)];
+
+                el.style.width = size + 'px';
+                el.style.height = size * (0.8 + Math.random() * 0.4) + 'px';
+                el.style.color = color;
+
+                const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                svg.setAttribute('viewBox', '0 0 100 100');
+                svg.setAttribute('width', '100%');
+                svg.setAttribute('height', '100%');
+                svg.style.display = 'block';
+                svg.style.overflow = 'visible';
+                const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                g.innerHTML = shapes[si];
+                const vein = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                vein.setAttribute('d', 'M50,20 L50,80 M30,40 L70,40 M25,60 L75,60');
+                vein.setAttribute('stroke', 'rgba(0,0,0,0.06)');
+                vein.setAttribute('stroke-width', '1.2');
+                vein.setAttribute('fill', 'none');
+                g.appendChild(vein);
+                svg.appendChild(g);
+                el.appendChild(svg);
+
+                // 随机位置漂浮参数
+                el._x = Math.random() * 100;           // 水平位置 %
+                el._y = Math.random() * 100;           // 垂直位置 %
+                el._windX = 0.3 + Math.random() * 0.8; // 风速（水平飘动速度）
+                el._windY = (Math.random() - 0.5) * 0.3; // 微弱垂直漂移
+                el._swayAmp = 20 + Math.random() * 60; // 摆动幅度
+                el._swayFreq = 0.3 + Math.random() * 0.6; // 摆动频率
+                el._phase = Math.random() * Math.PI * 2;
+                el._rotSpeed = (Math.random() - 0.5) * 2.5; // 旋转速度（更快）
+                el._baseRot = Math.random() * 360;
+                el._opacity = 0.5 + Math.random() * 0.5;
+                el.style.opacity = el._opacity;
+                el._time = Math.random() * 100;
+                el._flipSpeed = 0.5 + Math.random() * 1.5; // 翻转速度
+                el._si = si;
+
+                el.style.left = el._x + '%';
+                el.style.top = el._y + '%';
+                container.appendChild(el);
+                return el;
+            }
+
+            const leaves = [];
+            for (let i = 0; i < LEAF_COUNT; i++) leaves.push(createLeaf());
+
+            // 全局风向（缓慢变化）
+            let windAngle = 0;
+            let windStrength = 1;
+
+            function animateLeaves() {
+                const dt = 0.016;
+                // 风向缓慢变化
+                windAngle += dt * 0.15;
+                windStrength = 0.8 + Math.sin(windAngle * 0.3) * 0.4;
+                const windDx = Math.cos(windAngle) * windStrength;
+                const windDy = Math.sin(windAngle * 0.7) * 0.15;
+
+                leaves.forEach(leaf => {
+                    leaf._time += dt;
+                    // 水平：风 + 摆动
+                    leaf._x += (leaf._windX * windDx + Math.sin(leaf._time * leaf._swayFreq + leaf._phase) * leaf._swayAmp * 0.003) ;
+                    // 垂直：微弱漂移 + 摆动
+                    leaf._y += (leaf._windY + windDy + Math.cos(leaf._time * leaf._swayFreq * 0.8 + leaf._phase) * 0.03);
+                    // 环绕：飘出屏幕后从另一侧回来
+                    if (leaf._x > 105) { leaf._x = -5; leaf._y = Math.random() * 100; }
+                    if (leaf._x < -5) { leaf._x = 105; leaf._y = Math.random() * 100; }
+                    if (leaf._y > 105) leaf._y = -5;
+                    if (leaf._y < -5) leaf._y = 105;
+
+                    const rot = leaf._baseRot + leaf._time * leaf._rotSpeed * 60;
+                    const flip = Math.sin(leaf._time * leaf._flipSpeed) * 0.3;
+                    leaf.style.left = leaf._x + '%';
+                    leaf.style.top = leaf._y + '%';
+                    leaf.style.transform = `rotate(${rot}deg) scaleX(${1 + flip})`;
+                    leaf.style.opacity = leaf._opacity * (0.8 + 0.2 * Math.sin(leaf._time * 0.5 + leaf._phase));
+                });
+                requestAnimationFrame(animateLeaves);
+            }
+            animateLeaves();
+            window.addEventListener('resize', () => {});
+        })();
+
+        // ============================================================
+        // 8. 随机背景切换 — andsproject 动漫插画系列
+        // ============================================================
+        (function() {
+            // andsproject 插画系列（Pixabay CC0 免费商用）
+            const backgrounds = [
+                { file: 'assets/anime-illust-1.png', title: '少女·云朵·星空',  link: 'https://pixabay.com/vectors/girl-clouds-stars-art-calm-anime-8435339/' },
+                { file: 'assets/anime-illust-2.png', title: '少女·月夜·星河',  link: 'https://pixabay.com/vectors/girl-moon-stars-night-sky-8301168/' },
+                { file: 'assets/anime-illust-3.png', title: '少女·流星·夜空',  link: 'https://pixabay.com/vectors/anime-girl-meteor-night-sky-9063542/' },
+                { file: 'assets/anime-illust-4.png', title: '天使·月亮·云朵',  link: 'https://pixabay.com/vectors/girl-angel-moon-clouds-stars-8435329/' },
+                { file: 'assets/anime-illust-5.png', title: '少女·碎片·心灵',  link: 'https://pixabay.com/vectors/girl-blue-fragments-mind-soul-8880144/' },
+                { file: 'assets/anime-illust-6.png', title: '少女·和服·夜月',  link: 'https://pixabay.com/vectors/girl-kimono-night-moon-lamp-9622109/' },
+                { file: 'assets/anime-illust-7.png', title: '少女·夜月·动漫',  link: 'https://pixabay.com/vectors/girl-night-moon-anime-9599933/' },
+                { file: 'assets/anime-illust-8.png', title: '少女·希望·梦想',  link: 'https://pixabay.com/vectors/girl-hope-dream-anime-9599953/' }
+            ];
+
+            // 随机选择一张背景
+            const chosen = backgrounds[Math.floor(Math.random() * backgrounds.length)];
+
+            // 预加载图片，成功后设置背景
+            const img = new Image();
+            img.src = chosen.file;
+            img.onload = function() {
+                document.body.style.backgroundImage =
+                    'radial-gradient(ellipse at 20% 30%, rgba(124,92,252,0.12) 0%, transparent 50%),' +
+                    'radial-gradient(ellipse at 80% 70%, rgba(34,211,238,0.10) 0%, transparent 45%),' +
+                    'radial-gradient(ellipse at 50% 50%, rgba(251,146,60,0.04) 0%, transparent 40%),' +
+                    "url('" + chosen.file + "')";
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundPosition = 'center center';
+                var creditEl = document.querySelector('.credit');
+                if (creditEl) {
+                    creditEl.innerHTML = '当前背景：<a href="' + chosen.link + '" target="_blank" rel="noopener">' + chosen.title + '</a> · by <a href="https://pixabay.com/users/andsproject-26081561/" target="_blank" rel="noopener">andsproject</a> · <a href="https://pixabay.com" target="_blank" rel="noopener">Pixabay</a> CC0';
+                }
+            };
+            img.onerror = function() {
+                document.body.classList.add('no-image-fallback');
+            };
+        })();
+
+        console.log('🎬 manim-web · 未来设计 · 高级粒子系统 · 动漫背景');
+    </script>
+
 </body>
 </html>
