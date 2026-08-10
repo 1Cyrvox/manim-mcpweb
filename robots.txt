@@ -1,6 +1,6 @@
 User-agent: *
 Allow: /
-Sitemap: https://1cyrvox.github.io/manim-mcpweb/sitemap.xml
+Sitemap: https://aipaikj.top/sitemap.xml
 
 User-agent: Baiduspider
 Allow: /
