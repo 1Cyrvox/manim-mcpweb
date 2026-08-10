@@ -124,20 +124,25 @@ manim-web-mcp                       # 🚀 启动！浏览器自动打开预览
 | `web_persistent_add` | **执行 manim 代码（最常用）** |
 | `web_persistent_play` | 快捷播放动画 |
 | `web_persistent_mobject` | 快捷创建图形 |
+| `web_persistent_play_composite` | 编排组合动画 |
 
 | 👁 预览 | 说明 |
 |:--------|:-----|
 | `web_persistent_frame` | 查看当前帧 |
 | `web_persistent_capture` | 高质量截图 |
 | `web_persistent_render_video` | 渲染 mp4 / gif / webm |
+| `web_persistent_log` | 查看渲染日志 |
 
 | ⚙️ 管理 | 说明 |
 |:--------|:-----|
 | `web_persistent_export` | 导出 .py 文件 |
 | `web_persistent_reset` | 重置场景 |
+| `web_persistent_clear_code` | 清空代码历史 |
 | `web_persistent_status` | 查询状态 |
 | `web_persistent_list` | 列出所有项目 |
 | `web_persistent_stop` | 停止会话 |
+| `web_persistent_delete_project` | 删除项目 |
+| `web_docs_path` | 获取文档路径 |
 
 > 📖 [MCP 工具参考](https://github.com/1Cyrvox/manim-mcpweb/blob/main/src/manim_web/docs/manim%20API参考.md) · [manim API 参考](https://github.com/1Cyrvox/manim-mcpweb/blob/main/src/manim_web/docs/manim%20API参考.md) — 74 动画 + 141 图形 + 40 缓动 + 149 工具
 

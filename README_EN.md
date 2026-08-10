@@ -124,20 +124,25 @@ manim-web-mcp                       # 🚀 Launch! Browser opens preview automat
 | `web_persistent_add` | **Execute manim code (most used)** |
 | `web_persistent_play` | Quick-play animations |
 | `web_persistent_mobject` | Quick-create mobjects |
+| `web_persistent_play_composite` | Compose composite animations |
 
 | 👁 Preview | Description |
 |:----------|:------------|
 | `web_persistent_frame` | View current frame |
 | `web_persistent_capture` | High-quality screenshot |
 | `web_persistent_render_video` | Render mp4 / gif / webm |
+| `web_persistent_log` | View render log |
 
 | ⚙️ Management | Description |
 |:--------------|:------------|
 | `web_persistent_export` | Export .py file |
 | `web_persistent_reset` | Reset scene |
+| `web_persistent_clear_code` | Clear code history |
 | `web_persistent_status` | Query status |
 | `web_persistent_list` | List all projects |
 | `web_persistent_stop` | Stop session |
+| `web_persistent_delete_project` | Delete project |
+| `web_docs_path` | Get docs path |
 
 > 📖 [MCP Tool Reference](https://github.com/1Cyrvox/manim-mcpweb/blob/main/src/manim_web/docs/manim%20API参考.md) · [manim API Reference](https://github.com/1Cyrvox/manim-mcpweb/blob/main/src/manim_web/docs/manim%20API参考.md) — 74 animations + 141 mobjects + 40 easings + 149 utilities
 
