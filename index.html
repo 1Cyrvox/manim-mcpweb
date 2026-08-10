@@ -39,7 +39,7 @@ a:hover{color:#9b7eff}
 .nav-install:hover{box-shadow:0 4px 20px rgba(124,92,252,.4);color:#fff;transform:translateY(-1px)}
 
 /* Hero */
-.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 20px 40px;position:relative}
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;text-align:center;padding:max(100px,12vh) 20px 60px;position:relative}
 #particles{position:fixed;inset:0;z-index:0;pointer-events:none}
 .hero-glow{position:absolute;width:600px;height:600px;border-radius:50%;filter:blur(120px);opacity:.12;pointer-events:none}
 .hero-glow.g1{background:var(--accent);top:-10%;left:10%;animation:float1 15s ease-in-out infinite}
@@ -613,88 +613,198 @@ const counterObs=new IntersectionObserver((entries)=>{
 },{threshold:0.5});
 document.querySelectorAll('[data-count]').forEach(el=>counterObs.observe(el));
 
-// Full-Page Mouse-Interactive Particles
+// Premium Particles + Falling Leaves
 (function(){
   const canvas=document.getElementById('particles');
   const ctx=canvas.getContext('2d');
-  let w,h,particles=[],mouse={x:-9999,y:-9999,active:false};
-  const PARTICLE_COUNT=100,CONNECT_DIST=150,MOUSE_RADIUS=200,MOUSE_FORCE=.08;
-  const colors=['124,92,252','96,165,250','34,211,238','139,92,246','167,139,250'];
+  let w,h;
+  let particles=[],leaves=[];
+  let mouse={x:-9999,y:-9999,active:false};
+  const P_COUNT=80,L_COUNT=25,CONNECT_DIST=140,MOUSE_R=220;
+  const pColors=['124,92,252','96,165,250','34,211,238','139,92,246','167,139,250','236,72,153'];
+  const leafColors=['#7c5cfc','#60a5fa','#22d3ee','#a78bfa','#ec4899','#f472b6','#34d399','#fbbf24'];
   function resize(){w=canvas.width=window.innerWidth;h=canvas.height=window.innerHeight}
   resize();window.addEventListener('resize',resize);
   document.addEventListener('mousemove',e=>{mouse.x=e.clientX;mouse.y=e.clientY;mouse.active=true});
   document.addEventListener('mouseleave',()=>{mouse.active=false;mouse.x=-9999;mouse.y=-9999});
   document.addEventListener('touchmove',e=>{const t=e.touches[0];mouse.x=t.clientX;mouse.y=t.clientY;mouse.active=true},{passive:true});
   document.addEventListener('touchend',()=>{mouse.active=false;mouse.x=-9999;mouse.y=-9999});
-  class P{
-    constructor(){this.reset()}
-    reset(){
+
+  // Particle class - bright glowing dots
+  class Particle{
+    constructor(){this.init()}
+    init(){
       this.x=Math.random()*w;this.y=Math.random()*h;
-      this.vx=(Math.random()-.5)*.5;this.vy=(Math.random()-.5)*.5;
-      this.r=Math.random()*2+.6;this.baseA=Math.random()*.45+.1;this.a=this.baseA;
-      this.color=colors[Math.floor(Math.random()*colors.length)];
-      this.pulse=Math.random()*Math.PI*2;this.pulseSpeed=.008+Math.random()*.02;
+      this.vx=(Math.random()-.5)*.6;this.vy=(Math.random()-.5)*.6;
+      this.r=Math.random()*2.5+1;this.baseA=Math.random()*.5+.2;this.a=this.baseA;
+      this.color=pColors[Math.floor(Math.random()*pColors.length)];
+      this.phase=Math.random()*Math.PI*2;this.pSpeed=.01+Math.random()*.025;
+      this.trail=[];
     }
     update(){
-      this.pulse+=this.pulseSpeed;
-      this.a=this.baseA+Math.sin(this.pulse)*.12;
+      this.phase+=this.pSpeed;
+      this.a=this.baseA+Math.sin(this.phase)*.18;
+      // gentle drift
+      this.vx+=Math.sin(this.phase*.3)*.003;
+      this.vy+=Math.cos(this.phase*.2)*.003;
+      // mouse repulsion
       if(mouse.active){
         const dx=this.x-mouse.x,dy=this.y-mouse.y;
         const d=Math.sqrt(dx*dx+dy*dy);
-        if(d<MOUSE_RADIUS&&d>0){
-          const force=(1-d/MOUSE_RADIUS)*MOUSE_FORCE;
-          this.vx+=dx/d*force;this.vy+=dy/d*force;
-          this.a=Math.min(.95,this.baseA+.35*(1-d/MOUSE_RADIUS));
+        if(d<MOUSE_R&&d>1){
+          const f=(1-d/MOUSE_R)*.12;
+          this.vx+=dx/d*f;this.vy+=dy/d*f;
+          this.a=Math.min(1,this.baseA+.45*(1-d/MOUSE_R));
         }
       }
-      this.vx*=.985;this.vy*=.985;
-      const speed=Math.sqrt(this.vx*this.vx+this.vy*this.vy);
-      if(speed>2.5){this.vx*=2.5/speed;this.vy*=2.5/speed}
+      this.vx*=.982;this.vy*=.982;
+      const sp=Math.sqrt(this.vx*this.vx+this.vy*this.vy);
+      if(sp>3){this.vx*=3/sp;this.vy*=3/sp}
+      this.trail.push({x:this.x,y:this.y});
+      if(this.trail.length>6)this.trail.shift();
       this.x+=this.vx;this.y+=this.vy;
-      if(this.x<-20)this.x=w+20;if(this.x>w+20)this.x=-20;
-      if(this.y<-20)this.y=h+20;if(this.y>h+20)this.y=-20;
+      if(this.x<-30)this.x=w+30;if(this.x>w+30)this.x=-30;
+      if(this.y<-30)this.y=h+30;if(this.y>h+30)this.y=-30;
     }
     draw(){
+      // trail
+      for(let i=0;i<this.trail.length;i++){
+        const t=this.trail[i],ta=this.a*(i/this.trail.length)*.2;
+        ctx.beginPath();ctx.arc(t.x,t.y,this.r*.6,0,Math.PI*2);
+        ctx.fillStyle=`rgba(${this.color},${ta})`;ctx.fill();
+      }
+      // outer glow
+      const gr=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,this.r*5);
+      gr.addColorStop(0,`rgba(${this.color},${this.a*.35})`);
+      gr.addColorStop(.5,`rgba(${this.color},${this.a*.08})`);
+      gr.addColorStop(1,`rgba(${this.color},0)`);
+      ctx.fillStyle=gr;ctx.beginPath();ctx.arc(this.x,this.y,this.r*5,0,Math.PI*2);ctx.fill();
+      // core
       ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
       ctx.fillStyle=`rgba(${this.color},${this.a})`;ctx.fill();
-      if(this.a>.35){
-        ctx.beginPath();ctx.arc(this.x,this.y,this.r*3.5,0,Math.PI*2);
-        ctx.fillStyle=`rgba(${this.color},${this.a*.12})`;ctx.fill();
-      }
+      // bright center
+      ctx.beginPath();ctx.arc(this.x,this.y,this.r*.4,0,Math.PI*2);
+      ctx.fillStyle=`rgba(255,255,255,${this.a*.6})`;ctx.fill();
     }
   }
-  for(let i=0;i<PARTICLE_COUNT;i++)particles.push(new P());
+
+  // Leaf class - falling leaves with rotation
+  class Leaf{
+    constructor(){this.init(true)}
+    init(first){
+      this.x=Math.random()*(w+200)-100;
+      this.y=first?Math.random()*h:-60-Math.random()*200;
+      this.size=Math.random()*14+8;
+      this.rot=Math.random()*Math.PI*2;
+      this.rotSpeed=(Math.random()-.5)*.03;
+      this.vy=Math.random()*.8+.3;
+      this.vx=(Math.random()-.5)*.4;
+      this.sway=Math.random()*Math.PI*2;
+      this.swaySpeed=.008+Math.random()*.015;
+      this.swayAmp=Math.random()*1.5+.5;
+      this.color=leafColors[Math.floor(Math.random()*leafColors.length)];
+      this.opacity=Math.random()*.35+.15;
+      this.flip=Math.random()*Math.PI*2;
+      this.flipSpeed=.01+Math.random()*.02;
+    }
+    update(){
+      this.sway+=this.swaySpeed;
+      this.flip+=this.flipSpeed;
+      this.x+=this.vx+Math.sin(this.sway)*this.swayAmp;
+      this.y+=this.vy;
+      this.rot+=this.rotSpeed;
+      // mouse interaction - leaves scatter
+      if(mouse.active){
+        const dx=this.x-mouse.x,dy=this.y-mouse.y;
+        const d=Math.sqrt(dx*dx+dy*dy);
+        if(d<180&&d>1){
+          const f=(1-d/180)*2.5;
+          this.vx+=dx/d*f*.08;
+          this.vy+=dy/d*f*.04;
+          this.rotSpeed+=(Math.random()-.5)*.01;
+        }
+      }
+      this.vx*=.99;this.vy*=.995;
+      this.vy=Math.max(.2,this.vy);
+      if(this.y>h+80)this.init(false);
+      if(this.x<-100)this.x=w+50;
+      if(this.x>w+100)this.x=-50;
+    }
+    draw(){
+      ctx.save();
+      ctx.translate(this.x,this.y);
+      ctx.rotate(this.rot);
+      const scaleX=Math.cos(this.flip);
+      ctx.scale(scaleX,1);
+      ctx.globalAlpha=this.opacity;
+      // draw leaf shape
+      ctx.beginPath();
+      ctx.moveTo(0,-this.size);
+      ctx.bezierCurveTo(this.size*.6,-this.size*.3,this.size*.5,this.size*.3,0,this.size);
+      ctx.bezierCurveTo(-this.size*.5,this.size*.3,-this.size*.6,-this.size*.3,0,-this.size);
+      ctx.fillStyle=this.color;
+      ctx.fill();
+      // leaf vein
+      ctx.beginPath();
+      ctx.moveTo(0,-this.size*.8);
+      ctx.lineTo(0,this.size*.7);
+      ctx.strokeStyle=`rgba(255,255,255,.15)`;
+      ctx.lineWidth=.8;
+      ctx.stroke();
+      // side veins
+      for(let i=-2;i<=2;i++){
+        if(i===0)continue;
+        const yy=i*this.size*.25;
+        ctx.beginPath();ctx.moveTo(0,yy);
+        ctx.lineTo(this.size*.3*Math.sign(i),yy-this.size*.15);
+        ctx.strokeStyle=`rgba(255,255,255,.08)`;ctx.lineWidth=.5;ctx.stroke();
+      }
+      ctx.globalAlpha=1;
+      ctx.restore();
+    }
+  }
+
+  for(let i=0;i<P_COUNT;i++)particles.push(new Particle());
+  for(let i=0;i<L_COUNT;i++)leaves.push(new Leaf());
+
   function animate(){
     ctx.clearRect(0,0,w,h);
-    particles.forEach(p=>{p.update();p.draw()});
+    // draw particle connections
     for(let i=0;i<particles.length;i++){
       for(let j=i+1;j<particles.length;j++){
         const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y;
         const d=Math.sqrt(dx*dx+dy*dy);
         if(d<CONNECT_DIST){
-          const alpha=.1*(1-d/CONNECT_DIST);
-          const c=particles[i].color;
+          const a=.12*(1-d/CONNECT_DIST);
           ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);
           ctx.lineTo(particles[j].x,particles[j].y);
-          ctx.strokeStyle=`rgba(${c},${alpha})`;ctx.lineWidth=.5;ctx.stroke();
+          ctx.strokeStyle=`rgba(${particles[i].color},${a})`;ctx.lineWidth=.6;ctx.stroke();
         }
       }
     }
+    // mouse connections + glow
     if(mouse.active){
       for(let i=0;i<particles.length;i++){
         const dx=particles[i].x-mouse.x,dy=particles[i].y-mouse.y;
         const d=Math.sqrt(dx*dx+dy*dy);
-        if(d<MOUSE_RADIUS){
-          const alpha=.25*(1-d/MOUSE_RADIUS);
+        if(d<MOUSE_R){
+          const a=.3*(1-d/MOUSE_R);
           ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);
           ctx.lineTo(mouse.x,mouse.y);
-          ctx.strokeStyle=`rgba(124,92,252,${alpha})`;ctx.lineWidth=.7;ctx.stroke();
+          ctx.strokeStyle=`rgba(124,92,252,${a})`;ctx.lineWidth=.8;ctx.stroke();
         }
       }
-      const g=ctx.createRadialGradient(mouse.x,mouse.y,0,mouse.x,mouse.y,MOUSE_RADIUS*.6);
-      g.addColorStop(0,'rgba(124,92,252,.08)');g.addColorStop(1,'rgba(124,92,252,0)');
-      ctx.fillStyle=g;ctx.beginPath();ctx.arc(mouse.x,mouse.y,MOUSE_RADIUS*.6,0,Math.PI*2);ctx.fill();
+      // mouse glow
+      const mg=ctx.createRadialGradient(mouse.x,mouse.y,0,mouse.x,mouse.y,MOUSE_R*.7);
+      mg.addColorStop(0,'rgba(124,92,252,.1)');
+      mg.addColorStop(.5,'rgba(139,92,246,.04)');
+      mg.addColorStop(1,'rgba(124,92,252,0)');
+      ctx.fillStyle=mg;ctx.beginPath();ctx.arc(mouse.x,mouse.y,MOUSE_R*.7,0,Math.PI*2);ctx.fill();
     }
+    // update & draw particles
+    particles.forEach(p=>{p.update();p.draw()});
+    // update & draw leaves
+    leaves.forEach(l=>{l.update();l.draw()});
     requestAnimationFrame(animate);
   }
   animate();
