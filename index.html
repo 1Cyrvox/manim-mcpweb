@@ -1200,7 +1200,7 @@
                     <div class="card-title"><h4>图形创建与变换</h4></div>
                     <div class="card-badge">核心</div>
                 </div>
-                <div class="img-wrap"><img src="src/manim_web/docs/demo_shapes.gif" alt="图形变换" loading="lazy"></div>
+                <div class="img-wrap"><img src="assets/demo_shapes.gif" alt="图形变换" loading="lazy"></div>
                 <div class="card-code">
                     <div><span class="mcp-tool">web_persistent_add</span> <span class="mcp-arg">("c = Circle(color=BLUE)")</span></div>
                     <div><span class="mcp-tool">web_persistent_add</span> <span class="mcp-arg">("self.play(Create(c))")</span></div>
@@ -1213,7 +1213,7 @@
                     <div class="card-title"><h4>数学公式渲染</h4></div>
                     <div class="card-badge">核心</div>
                 </div>
-                <div class="img-wrap"><img src="src/manim_web/docs/demo_math.gif" alt="数学公式" loading="lazy"></div>
+                <div class="img-wrap"><img src="assets/demo_math.gif" alt="数学公式" loading="lazy"></div>
                 <div class="card-code">
                     <div><span class="mcp-tool">web_persistent_add</span> <span class="mcp-arg">("eq = MathTex('E=mc^2')")</span></div>
                     <div><span class="mcp-tool">web_persistent_add</span> <span class="mcp-arg">("self.play(Write(eq))")</span></div>
@@ -1226,7 +1226,7 @@
                     <div class="card-title"><h4>函数图像绘制</h4></div>
                     <div class="card-badge">核心</div>
                 </div>
-                <div class="img-wrap"><img src="src/manim_web/docs/demo_graph.gif" alt="函数图像" loading="lazy"></div>
+                <div class="img-wrap"><img src="assets/demo_graph.gif" alt="函数图像" loading="lazy"></div>
                 <div class="card-code">
                     <div><span class="mcp-tool">web_persistent_add</span> <span class="mcp-arg">("axes = Axes()")</span></div>
                     <div><span class="mcp-tool">web_persistent_add</span> <span class="mcp-arg">("graph = axes.plot(lambda x: x**2)")</span></div>
@@ -1239,7 +1239,7 @@
                     <div class="card-title"><h4>动画编排组合</h4></div>
                     <div class="card-badge">核心</div>
                 </div>
-                <div class="img-wrap"><img src="src/manim_web/docs/demo_composite.gif" alt="综合动画" loading="lazy"></div>
+                <div class="img-wrap"><img src="assets/demo_composite.gif" alt="综合动画" loading="lazy"></div>
                 <div class="card-code">
                     <div><span class="mcp-tool">web_persistent_add</span> <span class="mcp-arg">("self.play(Transform(sq, c))")</span></div>
                     <div><span class="mcp-tool">web_persistent_play</span> <span class="mcp-arg">("FadeOut(sq)")</span></div>
@@ -1252,7 +1252,7 @@
                     <div class="card-title"><h4>实时截图捕获</h4></div>
                     <div class="card-badge">预览</div>
                 </div>
-                <div class="img-wrap"><img src="src/manim_web/docs/demo_shapes.gif" alt="截图捕获" loading="lazy"></div>
+                <div class="img-wrap"><img src="assets/demo_shapes.gif" alt="截图捕获" loading="lazy"></div>
                 <div class="card-code">
                     <div><span class="mcp-tool">web_persistent_capture</span> <span class="mcp-arg">(format="png")</span></div>
                     <div><span class="mcp-comment"># → 高质量截图，即时预览</span></div>
@@ -1265,7 +1265,7 @@
                     <div class="card-title"><h4>视频渲染导出</h4></div>
                     <div class="card-badge">导出</div>
                 </div>
-                <div class="img-wrap"><img src="src/manim_web/docs/demo_composite.gif" alt="视频导出" loading="lazy"></div>
+                <div class="img-wrap"><img src="assets/demo_composite.gif" alt="视频导出" loading="lazy"></div>
                 <div class="card-code">
                     <div><span class="mcp-tool">web_persistent_render_video</span> <span class="mcp-arg">(format="mp4")</span></div>
                     <div><span class="mcp-tool">web_persistent_render_video</span> <span class="mcp-arg">(format="gif")</span></div>
@@ -1579,8 +1579,9 @@
         // ============================================================
         // 6. 高级粒子系统 — 全新升级
         //    核心技术：尾迹、HSL动态、发光、涡旋、连接线、鼠标交互
+        //    延迟启动：等页面渲染完再启动粒子，避免抢资源
         // ============================================================
-        (function() {
+        setTimeout(function() {
             const canvas = document.getElementById('particles-canvas');
             const ctx = canvas.getContext('2d');
             let W, H;
@@ -2109,7 +2110,7 @@
                 resize();
                 // 让粒子平滑过渡到新尺寸
             });
-        })();
+        }, 800);
 
         // ============================================================
         // 7. 树叶随风飘扬 — 随机位置漂浮，不坠落
@@ -2227,14 +2228,14 @@
         (function() {
             // andsproject 插画系列（Pixabay CC0 免费商用）
             const backgrounds = [
-                { file: 'assets/anime-illust-1.png', title: '少女·云朵·星空',  link: 'https://pixabay.com/vectors/girl-clouds-stars-art-calm-anime-8435339/' },
-                { file: 'assets/anime-illust-2.png', title: '少女·月夜·星河',  link: 'https://pixabay.com/vectors/girl-moon-stars-night-sky-8301168/' },
-                { file: 'assets/anime-illust-3.png', title: '少女·流星·夜空',  link: 'https://pixabay.com/vectors/anime-girl-meteor-night-sky-9063542/' },
-                { file: 'assets/anime-illust-4.png', title: '天使·月亮·云朵',  link: 'https://pixabay.com/vectors/girl-angel-moon-clouds-stars-8435329/' },
-                { file: 'assets/anime-illust-5.png', title: '少女·碎片·心灵',  link: 'https://pixabay.com/vectors/girl-blue-fragments-mind-soul-8880144/' },
-                { file: 'assets/anime-illust-6.png', title: '少女·和服·夜月',  link: 'https://pixabay.com/vectors/girl-kimono-night-moon-lamp-9622109/' },
-                { file: 'assets/anime-illust-7.png', title: '少女·夜月·动漫',  link: 'https://pixabay.com/vectors/girl-night-moon-anime-9599933/' },
-                { file: 'assets/anime-illust-8.png', title: '少女·希望·梦想',  link: 'https://pixabay.com/vectors/girl-hope-dream-anime-9599953/' }
+                { file: 'assets/anime-illust-1.webp', title: '少女·云朵·星空',  link: 'https://pixabay.com/vectors/girl-clouds-stars-art-calm-anime-8435339/' },
+                { file: 'assets/anime-illust-2.webp', title: '少女·月夜·星河',  link: 'https://pixabay.com/vectors/girl-moon-stars-night-sky-8301168/' },
+                { file: 'assets/anime-illust-3.webp', title: '少女·流星·夜空',  link: 'https://pixabay.com/vectors/anime-girl-meteor-night-sky-9063542/' },
+                { file: 'assets/anime-illust-4.webp', title: '天使·月亮·云朵',  link: 'https://pixabay.com/vectors/girl-angel-moon-clouds-stars-8435329/' },
+                { file: 'assets/anime-illust-5.webp', title: '少女·碎片·心灵',  link: 'https://pixabay.com/vectors/girl-blue-fragments-mind-soul-8880144/' },
+                { file: 'assets/anime-illust-6.webp', title: '少女·和服·夜月',  link: 'https://pixabay.com/vectors/girl-kimono-night-moon-lamp-9622109/' },
+                { file: 'assets/anime-illust-7.webp', title: '少女·夜月·动漫',  link: 'https://pixabay.com/vectors/girl-night-moon-anime-9599933/' },
+                { file: 'assets/anime-illust-8.webp', title: '少女·希望·梦想',  link: 'https://pixabay.com/vectors/girl-hope-dream-anime-9599953/' }
             ];
 
             // 随机选择一张背景
