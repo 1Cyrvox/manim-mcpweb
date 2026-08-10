@@ -1,6 +1,6 @@
 [project]
 name = "manim-web-mcp"
-version = "2.0.17"
+version = "2.0.18"
 description = "AI-driven manim animation engine — MCP protocol, real-time browser preview, session persistence, bundled optimized manim"
 readme = "README.md"
 license = "MIT"
