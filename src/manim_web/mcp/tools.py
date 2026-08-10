@@ -1,4 +1,4 @@
-"""MCP 工具定义 — 16 个 web_persistent_* 工具
+"""MCP 工具定义 — 17 个 web_persistent_* 工具
 
 从 mcp_server.py 拆分而来。所有 @server.tool 装饰的函数在此定义。
 
