@@ -40,8 +40,8 @@
     <td align="center" width="50%"><h4>📐 Math Formulas</h4></td>
   </tr>
   <tr>
-    <td align="center"><img src="https://raw.githubusercontent.com/1Cyrvox/manim-mcpweb/assets/demo_shapes.gif" width="450" /></td>
-    <td align="center"><img src="https://raw.githubusercontent.com/1Cyrvox/manim-mcpweb/assets/demo_math.gif" width="450" /></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/1Cyrvox/manim-mcpweb/main/manim-web/assets/demo_shapes.gif" width="450" /></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/1Cyrvox/manim-mcpweb/main/manim-web/assets/demo_math.gif" width="450" /></td>
   </tr>
   <tr>
     <td align="center"><sub><code>web_persistent_add("Circle → Square → Triangle")</code></sub></td>
@@ -52,8 +52,8 @@
     <td align="center"><h4>✨ Composite Animations</h4></td>
   </tr>
   <tr>
-    <td align="center"><img src="https://raw.githubusercontent.com/1Cyrvox/manim-mcpweb/assets/demo_graph.gif" width="450" /></td>
-    <td align="center"><img src="https://raw.githubusercontent.com/1Cyrvox/manim-mcpweb/assets/demo_composite.gif" width="450" /></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/1Cyrvox/manim-mcpweb/main/manim-web/assets/demo_graph.gif" width="450" /></td>
+    <td align="center"><img src="https://raw.githubusercontent.com/1Cyrvox/manim-mcpweb/main/manim-web/assets/demo_composite.gif" width="450" /></td>
   </tr>
   <tr>
     <td align="center"><sub><code>web_persistent_add("Axes + sin(x) + cos(x)")</code></sub></td>
