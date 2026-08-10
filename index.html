@@ -83,16 +83,19 @@ a:hover{color:#9b7eff}
 .reveal.visible{opacity:1;transform:translateY(0)}
 
 /* Demo Grid */
-.demo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+.demo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px}
 .demo-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:all .3s;backdrop-filter:blur(10px)}
 .demo-card:hover{transform:translateY(-6px);border-color:var(--border-h);box-shadow:0 20px 40px rgba(0,0,0,.3)}
-.demo-card .img-wrap{position:relative;overflow:hidden;aspect-ratio:16/10;background:#0c0c14}
+.demo-card .card-header{padding:20px 22px 12px;display:flex;align-items:center;gap:12px}
+.demo-card .card-header .card-icon{font-size:1.5em;flex-shrink:0}
+.demo-card .card-header .card-title{flex:1}
+.demo-card .card-header .card-title h4{font-size:1.05em;font-weight:700;margin-bottom:2px}
+.demo-card .card-header .card-title code{font-size:.78em;color:var(--cyan);background:rgba(34,211,238,.08);padding:2px 8px;border-radius:6px}
+.demo-card .card-header .card-badge{font-size:.7em;color:var(--accent);background:var(--accent-g);padding:3px 10px;border-radius:99px;font-weight:600;white-space:nowrap}
+.demo-card .img-wrap{position:relative;overflow:hidden;aspect-ratio:16/10;background:#0c0c14;margin:0 12px 12px;border-radius:var(--radius-sm)}
 .demo-card img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s}
 .demo-card:hover img{transform:scale(1.05)}
-.demo-card .img-wrap::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(8,8,13,.6),transparent 40%)}
-.demo-card .info{padding:18px 22px;position:relative}
-.demo-card .info h4{font-size:.98em;margin-bottom:4px}
-.demo-card .info code{font-size:.8em;color:var(--orange)}
+.demo-card .img-wrap::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(8,8,13,.4),transparent 30%);border-radius:var(--radius-sm)}
 
 /* Features */
 .features{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px}
@@ -187,7 +190,7 @@ pre code{background:none;padding:0;font-size:.85em;line-height:1.8;font-family:'
 }
 @media(max-width:480px){
   .hero-install{font-size:.85em;padding:12px 16px}
-  .demo-grid{grid-template-columns:1fr}
+  .demo-grid{grid-template-columns:1fr 1fr}
   .req-grid{grid-template-columns:1fr}
 }
 </style>
@@ -240,25 +243,57 @@ pre code{background:none;padding:0;font-size:.85em;line-height:1.8;font-family:'
 <section class="section" id="demos">
   <div class="section-center reveal">
     <div class="section-tag">✨ 演示</div>
-    <h2 class="section-title">看看效果</h2>
-    <p class="section-sub">每个动画，AI 只需 3 行 MCP 调用就能生成</p>
+    <h2 class="section-title">核心功能演示</h2>
+    <p class="section-sub">AI 一句话 → 代码自动生成 → 浏览器实时预览 → 一键导出</p>
   </div>
   <div class="demo-grid">
     <div class="demo-card reveal">
+      <div class="card-header">
+        <div class="card-icon">🔷</div>
+        <div class="card-title"><h4>图形创建与变换</h4><code>web_persistent_add()</code></div>
+        <div class="card-badge">核心</div>
+      </div>
       <div class="img-wrap"><img src="https://raw.githubusercontent.com/1Cyrvox/manim-mcpweb/main/docs/demo_shapes.gif" alt="图形变换" loading="lazy"></div>
-      <div class="info"><h4>图形变换</h4><code>Circle → Square → Triangle</code></div>
     </div>
     <div class="demo-card reveal">
+      <div class="card-header">
+        <div class="card-icon">📐</div>
+        <div class="card-title"><h4>数学公式推导</h4><code>MathTex + Transform</code></div>
+        <div class="card-badge">核心</div>
+      </div>
       <div class="img-wrap"><img src="https://raw.githubusercontent.com/1Cyrvox/manim-mcpweb/main/docs/demo_math.gif" alt="数学公式" loading="lazy"></div>
-      <div class="info"><h4>数学公式</h4><code>MathTex a²+b²=c²</code></div>
     </div>
     <div class="demo-card reveal">
+      <div class="card-header">
+        <div class="card-icon">📈</div>
+        <div class="card-title"><h4>函数图像绘制</h4><code>Axes + Plot + Animate</code></div>
+        <div class="card-badge">核心</div>
+      </div>
       <div class="img-wrap"><img src="https://raw.githubusercontent.com/1Cyrvox/manim-mcpweb/main/docs/demo_graph.gif" alt="函数图像" loading="lazy"></div>
-      <div class="info"><h4>函数图像</h4><code>Axes + sin(x) + cos(x)</code></div>
     </div>
     <div class="demo-card reveal">
+      <div class="card-header">
+        <div class="card-icon">🎬</div>
+        <div class="card-title"><h4>综合动画编排</h4><code>DrawBorderThenFill</code></div>
+        <div class="card-badge">核心</div>
+      </div>
       <div class="img-wrap"><img src="https://raw.githubusercontent.com/1Cyrvox/manim-mcpweb/main/docs/demo_composite.gif" alt="综合动画" loading="lazy"></div>
-      <div class="info"><h4>综合动画</h4><code>DrawBorderThenFill</code></div>
+    </div>
+    <div class="demo-card reveal">
+      <div class="card-header">
+        <div class="card-icon">🖼️</div>
+        <div class="card-title"><h4>横屏视频导出</h4><code>render_video(16:9)</code></div>
+        <div class="card-badge">导出</div>
+      </div>
+      <div class="img-wrap"><img src="https://raw.githubusercontent.com/1Cyrvox/manim-mcpweb/main/docs/templates/landscape_demo.gif" alt="横屏导出" loading="lazy"></div>
+    </div>
+    <div class="demo-card reveal">
+      <div class="card-header">
+        <div class="card-icon">📱</div>
+        <div class="card-title"><h4>竖屏视频导出</h4><code>render_video(9:16)</code></div>
+        <div class="card-badge">导出</div>
+      </div>
+      <div class="img-wrap"><img src="https://raw.githubusercontent.com/1Cyrvox/manim-mcpweb/main/docs/templates/portrait_demo.gif" alt="竖屏导出" loading="lazy"></div>
     </div>
   </div>
 </section>
