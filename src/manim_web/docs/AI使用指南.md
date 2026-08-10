@@ -22,11 +22,33 @@ manim-web 通过 MCP (Model Context Protocol) 暴露 17 个工具，AI 助手调
 
 ## 2.1 第一步：安装
 
+### 方式一：pip（推荐）
+
 ```bash
 pip install manim-web-mcp
 ```
 
-装完就能用，一行命令。
+### 方式二：uvx（无需预装，uv 自动管理环境）
+
+```bash
+# 无需 pip install，uvx 自动创建隔离环境并运行
+uvx manim-web-mcp
+```
+
+> 需要先安装 [uv](https://docs.astral.sh/uv/)：`pip install uv` 或 `curl -LsSf https://astral.sh/uv/install.sh | sh`
+
+### 方式三：npm 包装器（适合 Node.js 用户）
+
+```bash
+# 无需预装 Python 包，npx 自动下载 wrapper
+npx -y manim-web-mcp
+```
+
+> **前提**：系统已安装 Python >= 3.12 和 `pip install manim-web-mcp`。
+>
+> npm 包装器（[`manim-web-mcp`](https://www.npmjs.com/package/manim-web-mcp)）是一个轻量 Node.js 脚本，自动检测 Python 并启动 MCP 服务器。它**不是** Python 的替代品，而是让 Node.js 生态的 IDE/工具能通过 `npx` 一行命令启动服务器。
+>
+> 全局安装也可用：`npm install -g manim-web-mcp`，之后直接运行 `manim-web-mcp`。
 
 ---
 
@@ -56,16 +78,50 @@ pip install manim-web-mcp
 }
 ```
 
+**使用 uvx（无需 pip install）**：
+
+```json
+{
+  "mcpServers": {
+    "manim-web": {
+      "command": "uvx",
+      "args": ["manim-web-mcp"]
+    }
+  }
+}
+```
+
+**使用 npx（Node.js 用户）**：
+
+```json
+{
+  "mcpServers": {
+    "manim-web": {
+      "command": "npx",
+      "args": ["-y", "manim-web-mcp"]
+    }
+  }
+}
+```
+
 **Claude Code 终端用户**（无需配置文件）：
 
 ```bash
+# pip 方式
 claude mcp add manim-web "python -m manim_web"
+
+# uvx 方式
+claude mcp add manim-web "uvx manim-web-mcp"
 ```
 
 **直接终端用户**（无任何 IDE，命令行运行）：
 
 ```bash
+# pip 方式
 python -m manim_web
+
+# uvx 方式
+uvx manim-web-mcp
 ```
 
 > 服务器会自动从当前目录向上查找 `mcp.json`，找到项目根后自动工作。
@@ -128,6 +184,13 @@ Trae 启动子进程时，工作目录不一定是你当前打开的项目目录
 ---
 
 # 四、工作目录是怎么确定的
+
+> ⚠️ **MCP Roots 已弃用（2026-07-28 修订版）**
+>
+> MCP 协议 2026-07-28 修订版将 **Roots** 标记为 deprecated，与 Sampling、Logging 一起列入弃用名单。
+> 过渡期至少 **12 个月**（至约 2027-07-28），期间 Roots 仍正常工作，SDK 有兼容层自动走 legacy 路径。
+>
+> **对本项目的影响**：本服务器的工作目录检测不依赖 Roots——环境变量和文件查找是独立机制，即使 Roots 被移除也不影响核心功能。
 
 服务器启动时按以下顺序查找工作目录：
 
@@ -370,6 +433,8 @@ projects/<project-name>/
 6. **中文 Text**：使用 `Text()`（Pango 渲染），不用 `Tex`
 7. **数学公式**：使用 `MathTex()` 或 `Tex()`（需 LaTeX）
 8. **高级动画参数**：`web_persistent_play` 仅支持 `run_time`，其他参数用 `add_code`
+9. **视频渲染输出目录**：manim 按质量等级输出到不同子目录（`480p15`/`720p30`/`1080p60`/`2160p60`），工具会自动定位并返回完整路径
+10. **Windows 文件锁**：`web_persistent_delete_project` 在 Windows 上可能因日志文件被占用而部分失败，先调用 `web_persistent_stop` 再删除
 
 
 ---

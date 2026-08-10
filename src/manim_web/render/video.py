@@ -47,6 +47,8 @@ def render_video(session, format: str = "mp4", quality: str = "high",
             cmd,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             timeout=300,
             cwd=str(proj_dir),
         )
@@ -57,20 +59,52 @@ def render_video(session, format: str = "mp4", quality: str = "high",
             return {"success": False, "error": error_msg, "returncode": proc.returncode}
 
         output_path = None
-        for line in proc.stdout.split('\n'):
-            if 'File ready at' in line:
-                parts = line.split("'")
-                if len(parts) >= 2:
-                    output_path = parts[1]
-                    break
+        # Try to find "File ready at" in stdout (may be split across lines by progress bar)
+        full_output = proc.stdout.replace("\r", "").replace("\n", " ")
+        if "File ready at" in full_output:
+            # Extract path between single quotes after "File ready at"
+            idx = full_output.index("File ready at")
+            remainder = full_output[idx:]
+            parts = remainder.split("'")
+            if len(parts) >= 2:
+                # Strip whitespace/newlines that may be injected by progress bar
+                output_path = parts[1].replace(" ", "").strip()
+
+        # manim quality directory naming: low→480p15, medium→720p30, high→1080p60, production→2160p60
+        quality_dir_map = {
+            "low": "480p15",
+            "medium": "720p30",
+            "high": "1080p60",
+            "production": "2160p60",
+        }
+        media_dir = proj_dir / "media" / "videos" / "render_scene"
+
+        # Validate output_path from stdout (may be garbled by progress bar)
+        if output_path and not Path(output_path).exists():
+            output_path = None
 
         if not output_path:
-            media_dir = proj_dir / "media" / "videos" / "render_scene"
-            for q_dir in [f"{quality}_quality", f"{q_flag}"]:
+            # Try quality-specific directory names (new manim format first, then legacy)
+            dir_candidates = [
+                quality_dir_map.get(quality, ""),
+                f"{quality}_quality",
+                q_flag,
+            ]
+            for q_dir in dir_candidates:
+                if not q_dir:
+                    continue
                 candidate = media_dir / q_dir / f"{scene_name}.{format}"
                 if candidate.exists():
                     output_path = str(candidate.resolve())
                     break
+
+            # Last resort: glob for the file
+            if not output_path and media_dir.exists():
+                matches = list(media_dir.glob(f"**/{scene_name}.{format}"))
+                # Exclude partial_movie_files
+                matches = [m for m in matches if "partial_movie_files" not in str(m)]
+                if matches:
+                    output_path = str(matches[0].resolve())
 
         if output_path and Path(output_path).exists():
             file_size = Path(output_path).stat().st_size

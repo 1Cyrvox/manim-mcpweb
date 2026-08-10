@@ -1,0 +1,36 @@
+{
+  "name": "manim-web-mcp",
+  "version": "2.0.23",
+  "description": "AI-driven manim animation engine MCP server — npm wrapper for the Python package",
+  "license": "MIT",
+  "author": "Cyrvox <cyrvox@users.noreply.github.com>",
+  "homepage": "https://www.aipaikj.top/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/1Cyrvox/manim-mcpweb.git",
+    "directory": "manim-web/npm"
+  },
+  "bugs": {
+    "url": "https://github.com/1Cyrvox/manim-mcpweb/issues"
+  },
+  "bin": {
+    "manim-web-mcp": "cli.js"
+  },
+  "files": [
+    "cli.js",
+    "README.md"
+  ],
+  "keywords": [
+    "mcp",
+    "manim",
+    "animation",
+    "ai",
+    "math",
+    "latex",
+    "visualization",
+    "model-context-protocol"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

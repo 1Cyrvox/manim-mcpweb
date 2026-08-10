@@ -18,6 +18,10 @@ env/
 *.log
 .daemon_pid
 .daemon_lock
+
+# npm
+.npmrc
+npm/*.tgz
 .persistent_http_port
 .persistent_port
 .web_persistent_http_port
@@ -48,3 +52,5 @@ Thumbs.db
 
 # Sensitive
 PyPI-Recovery-Codes-*.txt
+npm_recovery_codes.txt
+test_input.bin
