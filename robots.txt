@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Sitemap: https://1cyrvox.github.io/manim-mcpweb/sitemap.xml
+
+User-agent: Baiduspider
+Allow: /
+
+User-agent: Googlebot
+Allow: /
