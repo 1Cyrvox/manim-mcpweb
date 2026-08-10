@@ -68,15 +68,12 @@ async def _try_correct_work_dir_from_roots(ctx: _MCPContext) -> None:
             root_path = Path(path_str)
             if not root_path.exists():
                 continue
-            # Check if this root contains .joycode/mcp.json with manim-web
-            mcp_json = root_path / ".joycode/mcp.json"
-            if mcp_json.exists():
-                with open(mcp_json, encoding="utf-8") as f:
-                    config = _json.load(f)
-                if "manim-web" in config.get("mcpServers", {}):
-                    if root_path.resolve() != current_work_dir:
-                        manim_web._update_work_dir(root_path)
-                    return  # Found the right root, done
+            # Trust the IDE's roots directly — no config file needed.
+            # The MCP roots capability is the IDE telling us where the project is.
+            # Requiring a config file to "confirm" defeats the purpose of roots.
+            if root_path.resolve() != current_work_dir:
+                manim_web._update_work_dir(root_path)
+            return  # Found the right root, done
     except Exception:
         pass  # Silently ignore — best-effort correction
 

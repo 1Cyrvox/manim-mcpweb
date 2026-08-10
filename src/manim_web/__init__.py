@@ -1,4 +1,4 @@
-__version__ = "2.0.18"
+__version__ = "2.0.19"
 import os
 import sys
 from pathlib import Path
@@ -92,11 +92,21 @@ def _detect_work_dir() -> Path:
     if env_dir:
         return Path(env_dir).resolve()
 
-    # 3. Walk up from cwd looking for .joycode/mcp.json (project root marker)
+    # 3. Walk up from cwd — mark candidate project roots by existence check only
     current = Path.cwd()
     for parent in [current] + list(current.parents):
+        # 3a. .joycode/mcp.json (original, keep for backward compatibility)
         if (parent / ".joycode" / "mcp.json").exists():
             return parent.resolve()
+        # 3b. Any subdirectory containing mcp.json (covers .trae, .cursor, .windsurf, jsmcp, etc.)
+        #     Only checks file existence — fast and sufficient as a startup hint;
+        #     real precision comes from tools.py roots correction at runtime.
+        try:
+            for entry in parent.iterdir():
+                if entry.is_dir() and (entry / "mcp.json").exists():
+                    return parent.resolve()
+        except OSError:
+            continue
 
     # 4. Search IDE workspace storage for project directories with manim-web configured
     #    IMPORTANT: Only search the PARENT IDE's workspace to avoid cross-IDE contamination.

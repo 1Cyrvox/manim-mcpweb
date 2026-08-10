@@ -6,10 +6,11 @@
 
 ## 一、概述
 
-manim-web 通过 MCP (Model Context Protocol) 暴露 16 个工具，AI 助手调用这些工具即可操控 manim 引擎，实时创建数学动画并在浏览器中预览。
+manim-web 通过 MCP (Model Context Protocol) 暴露 17 个工具，AI 助手调用这些工具即可操控 manim 引擎，实时创建数学动画并在浏览器中预览。
 
 **核心优势**：
 - **零学习成本**：工具描述和参数说明完全自解释，AI 读取工具定义即可使用
+- **零配置**：pip 安装后自动检测工作目录，支持所有主流 IDE
 - **沙箱保护**：默认 strict 模式仅允许 manim API，不可能改坏系统
 - **项目隔离**：不同 AI/不同项目互不干扰
 - **跨对话持久化**：关闭后重新打开自动恢复场景状态
@@ -26,9 +27,9 @@ pip install manim-web-mcp
 
 安装后 `manim-web-mcp` 命令全局可用。
 
-### 2.2 标准配置（pip 全局安装）
+### 2.2 标准配置
 
-在 AI 工具的 MCP 配置文件中添加：
+在 IDE 的 MCP 配置文件中添加：
 
 ```json
 {
@@ -42,31 +43,22 @@ pip install manim-web-mcp
 }
 ```
 
-**无需指定 `cwd`** — 工作目录自动检测（见 §2.5）。
+**无需指定 `cwd`** — 工作目录自动检测（见 §2.4）。
 
-### 2.3 Cursor / Windsurf / Claude Desktop
+### 2.3 各 IDE 配置位置
 
-上述工具均支持 MCP，在设置界面添加 MCP Server 配置即可，格式同 §2.2。
+| IDE | 配置文件位置 |
+|-----|-------------|
+| JoyCode | `.joycode/mcp.json` |
+| Cursor | `.cursor/mcp.json` |
+| Windsurf | `.windsurf/mcp.json` |
+| Trae | `.trae/mcp.json` |
+| VS Code | 通过扩展设置界面添加 |
+| Claude Desktop | 设置界面添加 MCP Server |
 
-### 2.4 JoyCode / 其他支持 MCP 的 IDE
+所有 IDE 配置格式相同，见 §2.2。配置文件放在项目根目录即可。
 
-在 `.joycode/mcp.json` 中添加：
-
-```json
-{
-  "mcpServers": {
-    "manim-web": {
-      "timeout": 10000,
-      "command": "manim-web-mcp",
-      "args": ["--transport", "stdio"],
-      "env": {"PYTHONUNBUFFERED": "1"},
-      "type": "stdio"
-    }
-  }
-}
-```
-
-### 2.5 工作目录自动检测
+### 2.4 工作目录自动检测
 
 pip 全局安装后，`manim-web-mcp` 自动检测工作目录，**零配置即可使用**。检测优先级：
 
@@ -74,13 +66,15 @@ pip 全局安装后，`manim-web-mcp` 自动检测工作目录，**零配置即�
 |--------|----------|----------|
 | 1 | CLI `--work-dir` 参数 | 手动指定 |
 | 2 | `MANIM_WEB_WORK_DIR` 环境变量 | 环境变量配置 |
-| 3 | 从 cwd 向上查找 `.joycode/mcp.json` | 项目根目录标记 |
+| 3 | 从 cwd 向上查找含 `mcp.json` 的目录 | 项目根目录标记（支持任何 IDE） |
 | 4 | IDE workspace storage 搜索 | JoyCode/VSCode/Cursor/Windsurf |
 | 5 | 回退到 cwd | 兜底 |
 
-此外，首次工具调用时通过 MCP `roots` 协议进行懒校正（第 6 级安全网），支持任何实现了 roots capability 的 MCP 客户端。
+**步骤 3 说明**：扫描项目根目录下任何子目录（`.joycode/`、`.cursor/`、`.trae/`、`jsmcp/` 等）中的 `mcp.json`，仅检查文件存在性，不读取内容。
 
-### 2.6 启动验证
+**运行时校正**：首次工具调用时通过 MCP `roots` 协议获取 IDE 的工作区目录，直接信任 IDE 提供的 roots，无需配置文件验证。这确保即使没有 `mcp.json`，只要 IDE 支持 roots capability，工作目录也能正确定位。
+
+### 2.5 启动验证
 
 AI 连接后，调用 `web_persistent_list` 工具，返回成功即表示 MCP 连接正常。
 
@@ -134,6 +128,13 @@ AI 连接后，调用 `web_persistent_list` 工具，返回成功即表示 MCP �
 | 高质量截图 | `web_persistent_capture` | 无损 PNG/WebP |
 | 导出可运行脚本 | `web_persistent_export` | 生成 .py 文件 |
 | 渲染最终视频 | `web_persistent_render_video` | mp4/gif/webm |
+| 重置场景 | `web_persistent_reset` | 清空场景重新开始 |
+| 清除累积代码 | `web_persistent_clear_code` | 仅清除代码，保留场景 |
+| 删除项目 | `web_persistent_delete_project` | 清理项目目录 |
+| 查看会话状态 | `web_persistent_status` | 当前会话信息 |
+| 列出所有项目 | `web_persistent_list` | 查看已有项目 |
+| 查看渲染日志 | `web_persistent_log` | 排查渲染问题 |
+| 获取文档路径 | `web_docs_path` | 查看本地文档 |
 
 ---
 
@@ -308,17 +309,5 @@ projects/<project-name>/
 7. **数学公式**：使用 `MathTex()` 或 `Tex()`（需 LaTeX）
 8. **高级动画参数**：`web_persistent_play` 仅支持 `run_time`，其他参数用 `add_code`
 
+
 ---
-
-## 十、故障排查
-
-| 问题 | 原因 | 解决 |
-|------|------|------|
-| "Session not initialized" | 未调用 start | 先调用 `web_persistent_start` |
-| "Animation in progress" | 上一个动画还在播放 | 等待完成或检查日志 |
-| "Target not found" | 图形变量名不存在 | 检查变量名拼写 |
-| "Sandbox restriction" | strict 模式限制 | 换 relaxed/full 或用 manim API |
-| 浏览器未打开 | 端口冲突或浏览器路径 | 检查 `preview_url` 手动打开 |
-| 恢复后场景不完整 | state.json 损坏 | 用 `reset` 重新开始 |
-
-更多排查 → [常见问题.md](常见问题.md)
