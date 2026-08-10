@@ -1,0 +1,12 @@
+{
+  "name": "manim-web-mcp-landing",
+  "version": "1.0.0",
+  "description": "Landing page for manim-web-mcp",
+  "private": true,
+  "scripts": {
+    "build": "echo 'Static site - no build needed'"
+  },
+  "dependencies": {
+    "@vercel/speed-insights": "^2.0.0"
+  }
+}
