@@ -6,6 +6,20 @@
     <title>manim-web · 未来 · AI 动画引擎</title>
     <meta name="description" content="AI驱动的数学动画引擎，说一句话，AI帮你写代码、渲染、预览。基于MCP协议，支持浏览器实时预览。" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>" />
+    <script>
+        // 在head中立即预选背景，让浏览器尽早开始下载
+        window.__bgFiles = [
+            'assets/anime-illust-1.png','assets/anime-illust-2.png','assets/anime-illust-3.png',
+            'assets/anime-illust-4.png','assets/anime-illust-5.png','assets/anime-illust-6.png',
+            'assets/anime-illust-7.png','assets/anime-illust-8.png'
+        ];
+        window.__chosenBg = window.__bgFiles[Math.floor(Math.random() * window.__bgFiles.length)];
+        var preloadLink = document.createElement('link');
+        preloadLink.rel = 'preload';
+        preloadLink.as = 'image';
+        preloadLink.href = window.__chosenBg;
+        document.head.appendChild(preloadLink);
+    </script>
     <style>
         /* ============================================================
            1. CSS 变量 & 重置 — 未来感设计系统
@@ -2228,23 +2242,22 @@
         (function() {
             // andsproject 插画系列（Pixabay CC0 免费商用）
             const backgrounds = [
-                { file: 'assets/anime-illust-1.webp', title: '少女·云朵·星空',  link: 'https://pixabay.com/vectors/girl-clouds-stars-art-calm-anime-8435339/' },
-                { file: 'assets/anime-illust-2.webp', title: '少女·月夜·星河',  link: 'https://pixabay.com/vectors/girl-moon-stars-night-sky-8301168/' },
-                { file: 'assets/anime-illust-3.webp', title: '少女·流星·夜空',  link: 'https://pixabay.com/vectors/anime-girl-meteor-night-sky-9063542/' },
-                { file: 'assets/anime-illust-4.webp', title: '天使·月亮·云朵',  link: 'https://pixabay.com/vectors/girl-angel-moon-clouds-stars-8435329/' },
-                { file: 'assets/anime-illust-5.webp', title: '少女·碎片·心灵',  link: 'https://pixabay.com/vectors/girl-blue-fragments-mind-soul-8880144/' },
-                { file: 'assets/anime-illust-6.webp', title: '少女·和服·夜月',  link: 'https://pixabay.com/vectors/girl-kimono-night-moon-lamp-9622109/' },
-                { file: 'assets/anime-illust-7.webp', title: '少女·夜月·动漫',  link: 'https://pixabay.com/vectors/girl-night-moon-anime-9599933/' },
-                { file: 'assets/anime-illust-8.webp', title: '少女·希望·梦想',  link: 'https://pixabay.com/vectors/girl-hope-dream-anime-9599953/' }
+                { file: 'assets/anime-illust-1.png', title: '少女·云朵·星空',  link: 'https://pixabay.com/vectors/girl-clouds-stars-art-calm-anime-8435339/' },
+                { file: 'assets/anime-illust-2.png', title: '少女·月夜·星河',  link: 'https://pixabay.com/vectors/girl-moon-stars-night-sky-8301168/' },
+                { file: 'assets/anime-illust-3.png', title: '少女·流星·夜空',  link: 'https://pixabay.com/vectors/anime-girl-meteor-night-sky-9063542/' },
+                { file: 'assets/anime-illust-4.png', title: '天使·月亮·云朵',  link: 'https://pixabay.com/vectors/girl-angel-moon-clouds-stars-8435329/' },
+                { file: 'assets/anime-illust-5.png', title: '少女·碎片·心灵',  link: 'https://pixabay.com/vectors/girl-blue-fragments-mind-soul-8880144/' },
+                { file: 'assets/anime-illust-6.png', title: '少女·和服·夜月',  link: 'https://pixabay.com/vectors/girl-kimono-night-moon-lamp-9622109/' },
+                { file: 'assets/anime-illust-7.png', title: '少女·夜月·动漫',  link: 'https://pixabay.com/vectors/girl-night-moon-anime-9599933/' },
+                { file: 'assets/anime-illust-8.png', title: '少女·希望·梦想',  link: 'https://pixabay.com/vectors/girl-hope-dream-anime-9599953/' }
             ];
 
-            // 随机选择一张背景
-            const chosen = backgrounds[Math.floor(Math.random() * backgrounds.length)];
+            // 使用head中预选的背景（preload已开始下载）
+            var chosenFile = window.__chosenBg;
+            var chosen = backgrounds.find(function(b) { return b.file === chosenFile; }) || backgrounds[0];
 
-            // 预加载图片，成功后设置背景
-            const img = new Image();
-            img.src = chosen.file;
-            img.onload = function() {
+            // 图片已在head中preload，直接设置背景
+            function applyBg() {
                 document.body.style.backgroundImage =
                     'radial-gradient(ellipse at 20% 30%, rgba(124,92,252,0.12) 0%, transparent 50%),' +
                     'radial-gradient(ellipse at 80% 70%, rgba(34,211,238,0.10) 0%, transparent 45%),' +
@@ -2252,13 +2265,22 @@
                     "url('" + chosen.file + "')";
                 document.body.style.backgroundSize = 'cover';
                 document.body.style.backgroundPosition = 'center center';
+                document.body.style.backgroundAttachment = 'fixed';
                 var creditEl = document.querySelector('.credit');
                 if (creditEl) {
                     creditEl.innerHTML = '当前背景：<a href="' + chosen.link + '" target="_blank" rel="noopener">' + chosen.title + '</a> · by <a href="https://pixabay.com/users/andsproject-26081561/" target="_blank" rel="noopener">andsproject</a> · <a href="https://pixabay.com" target="_blank" rel="noopener">Pixabay</a> CC0';
                 }
-            };
-            img.onerror = function() {
-                document.body.classList.add('no-image-fallback');
+            }
+
+            // 如果图片已缓存（preload完成），立即设置；否则等加载完
+            var img = new Image();
+            img.src = chosen.file;
+            if (img.complete) {
+                applyBg();
+            } else {
+                img.onload = applyBg;
+                img.onerror = function() {
+                    document.body.classList.add('no-image-fallback');
             };
         })();
 
