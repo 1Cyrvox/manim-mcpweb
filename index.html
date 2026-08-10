@@ -18,6 +18,7 @@
 }
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;line-height:1.7;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 50% -20%,rgba(124,92,252,.08),transparent),radial-gradient(ellipse 60% 40% at 80% 100%,rgba(34,211,238,.05),transparent);pointer-events:none;z-index:0}
 a{color:var(--accent);text-decoration:none;transition:color .2s}
 a:hover{color:#9b7eff}
 ::selection{background:var(--accent);color:#fff}
@@ -27,19 +28,19 @@ a:hover{color:#9b7eff}
 
 /* Nav */
 .nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 24px;transition:background .3s,box-shadow .3s,backdrop-filter .3s}
-.nav.scrolled{background:rgba(8,8,13,.85);backdrop-filter:blur(20px);box-shadow:0 1px 0 var(--border)}
+.nav.scrolled{background:rgba(8,8,13,.85);backdrop-filter:blur(20px);box-shadow:0 1px 0 var(--border),0 4px 30px rgba(0,0,0,.3)}
 .nav-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:60px}
 .nav-logo{font-weight:800;font-size:1.15em;display:flex;align-items:center;gap:8px}
 .nav-logo span{background:linear-gradient(135deg,var(--accent),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .nav-links{display:flex;gap:24px;font-size:.88em}
 .nav-links a{color:var(--text2);transition:color .2s}
 .nav-links a:hover{color:var(--text)}
-.nav-install{background:var(--accent);color:#fff;padding:6px 16px;border-radius:var(--radius-sm);font-size:.82em;font-weight:600;transition:all .2s}
-.nav-install:hover{background:var(--accent2);color:#fff;transform:translateY(-1px)}
+.nav-install{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;padding:6px 16px;border-radius:var(--radius-sm);font-size:.82em;font-weight:600;transition:all .2s;box-shadow:0 2px 12px rgba(124,92,252,.25)}
+.nav-install:hover{box-shadow:0 4px 20px rgba(124,92,252,.4);color:#fff;transform:translateY(-1px)}
 
 /* Hero */
-.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:100px 20px 60px;position:relative;overflow:hidden}
-#particles{position:absolute;inset:0;z-index:0}
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 20px 40px;position:relative}
+#particles{position:fixed;inset:0;z-index:0;pointer-events:none}
 .hero-glow{position:absolute;width:600px;height:600px;border-radius:50%;filter:blur(120px);opacity:.12;pointer-events:none}
 .hero-glow.g1{background:var(--accent);top:-10%;left:10%;animation:float1 15s ease-in-out infinite}
 .hero-glow.g2{background:var(--blue);bottom:-10%;right:10%;animation:float2 18s ease-in-out infinite}
@@ -47,8 +48,9 @@ a:hover{color:#9b7eff}
 @keyframes float1{0%,100%{transform:translate(0,0)}50%{transform:translate(40px,30px)}}
 @keyframes float2{0%,100%{transform:translate(0,0)}50%{transform:translate(-30px,-40px)}}
 @keyframes float3{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-20px,20px) scale(1.1)}}
-.hero *{position:relative;z-index:1}
-.hero-badge{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:99px;padding:8px 20px;font-size:.82em;color:var(--text2);margin-bottom:32px;backdrop-filter:blur(10px)}
+.hero *{position:relative;z-index:2}
+.section,.cta-section,.footer{position:relative;z-index:1}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1px solid rgba(124,92,252,.2);border-radius:99px;padding:8px 20px;font-size:.82em;color:var(--text2);margin-bottom:32px;backdrop-filter:blur(10px);box-shadow:0 0 20px rgba(124,92,252,.08)}
 .hero-badge .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 8px var(--green)}50%{opacity:.5;box-shadow:0 0 4px var(--green)}}
 .hero h1{font-size:clamp(3rem,8vw,5.5rem);font-weight:900;letter-spacing:-.04em;margin-bottom:12px;background:linear-gradient(135deg,#fff 0%,var(--accent) 40%,var(--cyan) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1}
@@ -56,7 +58,7 @@ a:hover{color:#9b7eff}
 .hero-sub .cursor{display:inline-block;width:2px;height:1.1em;background:var(--accent);margin-left:2px;vertical-align:text-bottom;animation:blink 1s step-end infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 .hero-install{display:inline-flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 28px;font-family:'Fira Code',Consolas,monospace;font-size:1.05em;margin-bottom:32px;cursor:pointer;transition:all .25s;backdrop-filter:blur(10px)}
-.hero-install:hover{border-color:var(--accent);box-shadow:0 0 30px var(--accent-g);transform:translateY(-2px)}
+.hero-install:hover{border-color:var(--accent);box-shadow:0 0 40px rgba(124,92,252,.2),0 0 0 1px rgba(124,92,252,.2);transform:translateY(-2px)}
 .hero-install .prompt{color:var(--green)}
 .hero-install .cmd{color:var(--text)}
 .hero-install .copy-icon{color:var(--text3);transition:color .2s}
@@ -64,51 +66,59 @@ a:hover{color:#9b7eff}
 .hero-buttons{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
 .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:12px;font-size:.92em;font-weight:600;transition:all .25s;border:1px solid transparent;cursor:pointer}
 .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:rgba(124,92,252,.5)}
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(124,92,252,.35)}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(124,92,252,.4),0 0 0 1px rgba(124,92,252,.3)}
 .btn-secondary{background:var(--surface);color:var(--text);border-color:var(--border);backdrop-filter:blur(10px)}
 .btn-secondary:hover{border-color:var(--accent-h);color:#fff;transform:translateY(-2px)}
 .hero-stats{display:flex;gap:40px;margin-top:48px;font-size:.88em;color:var(--text2)}
-.hero-stats .stat-val{font-size:1.6em;font-weight:800;color:var(--text);display:block}
+.hero-stats .stat-val{font-size:1.6em;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:block}
 
 /* Section */
 .section{max-width:1100px;margin:0 auto;padding:100px 24px}
-.section-tag{display:inline-flex;align-items:center;gap:6px;background:var(--accent-g);border:1px solid rgba(124,92,252,.2);border-radius:99px;padding:6px 16px;font-size:.78em;color:var(--accent);font-weight:600;margin-bottom:16px}
-.section-title{font-size:clamp(1.8rem,4vw,2.6rem);font-weight:800;letter-spacing:-.02em;margin-bottom:12px}
+.section-tag{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,rgba(124,92,252,.12),rgba(34,211,238,.08));border:1px solid rgba(124,92,252,.2);border-radius:99px;padding:6px 16px;font-size:.78em;color:var(--accent);font-weight:600;margin-bottom:16px}
+.section-title{font-size:clamp(1.8rem,4vw,2.6rem);font-weight:800;letter-spacing:-.02em;margin-bottom:12px;background:linear-gradient(135deg,#fff 0%,rgba(255,255,255,.7) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .section-sub{color:var(--text2);margin-bottom:48px;font-size:1.05em;max-width:600px}
 .section-center{text-align:center}
 .section-center .section-sub{margin-left:auto;margin-right:auto}
 
 /* Reveal Animation */
-.reveal{opacity:0;transform:translateY(30px);transition:opacity .6s ease,transform .6s ease}
-.reveal.visible{opacity:1;transform:translateY(0)}
+.reveal{opacity:0;transform:translateY(40px) scale(.97);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1)}
+.reveal.visible{opacity:1;transform:translateY(0) scale(1)}
 
 /* Demo Grid */
 .demo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px}
-.demo-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:all .3s;backdrop-filter:blur(10px)}
-.demo-card:hover{transform:translateY(-6px);border-color:var(--border-h);box-shadow:0 20px 40px rgba(0,0,0,.3)}
+.demo-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:all .4s cubic-bezier(.16,1,.3,1);backdrop-filter:blur(10px);position:relative}
+.demo-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--cyan));opacity:0;transition:opacity .3s}
+.demo-card:hover::before{opacity:1}
+.demo-card:hover{transform:translateY(-8px) scale(1.02);border-color:var(--accent);box-shadow:0 20px 60px rgba(124,92,252,.15),0 0 0 1px rgba(124,92,252,.1)}
 .demo-card .card-header{padding:20px 22px 12px;display:flex;align-items:center;gap:12px}
 .demo-card .card-header .card-icon{font-size:1.5em;flex-shrink:0}
 .demo-card .card-header .card-title{flex:1}
 .demo-card .card-header .card-title h4{font-size:1.05em;font-weight:700;margin-bottom:2px}
 .demo-card .card-header .card-title code{font-size:.78em;color:var(--cyan);background:rgba(34,211,238,.08);padding:2px 8px;border-radius:6px}
-.demo-card .card-header .card-badge{font-size:.7em;color:var(--accent);background:var(--accent-g);padding:3px 10px;border-radius:99px;font-weight:600;white-space:nowrap}
+.demo-card .card-header .card-badge{font-size:.7em;color:var(--cyan);background:linear-gradient(135deg,rgba(34,211,238,.1),rgba(124,92,252,.1));border:1px solid rgba(34,211,238,.2);padding:3px 10px;border-radius:99px;font-weight:600;white-space:nowrap}
 .demo-card .img-wrap{position:relative;overflow:hidden;aspect-ratio:16/10;background:#0c0c14;margin:0 12px 12px;border-radius:var(--radius-sm)}
 .demo-card img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s}
 .demo-card:hover img{transform:scale(1.05)}
 .demo-card .img-wrap::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(8,8,13,.4),transparent 30%);border-radius:var(--radius-sm)}
+.demo-card .card-code{padding:0 16px 16px;font-family:'Fira Code',Consolas,monospace;font-size:.72em;line-height:1.7}
+.demo-card .card-code .mcp-line{display:flex;align-items:baseline;gap:6px;padding:2px 0;color:var(--text2)}
+.demo-card .card-code .mcp-line .mcp-tool{color:var(--cyan);white-space:nowrap}
+.demo-card .card-code .mcp-line .mcp-arg{color:#c4b5fd;opacity:.85}
+.demo-card .card-code .mcp-line .mcp-comment{color:var(--text3);font-style:italic}
+
 
 /* Features */
 .features{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px}
 .feature{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:32px;transition:all .3s;backdrop-filter:blur(10px);position:relative;overflow:hidden}
 .feature::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0;transition:opacity .3s}
-.feature:hover{border-color:var(--border-h);transform:translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,.2)}
+.feature:hover{border-color:var(--accent);transform:translateY(-6px);box-shadow:0 20px 50px rgba(124,92,252,.12),0 0 0 1px rgba(124,92,252,.08)}
 .feature:hover::before{opacity:1}
-.feature .icon{font-size:2em;margin-bottom:16px;display:inline-block}
+.feature .icon{font-size:2em;margin-bottom:16px;display:inline-block;width:56px;height:56px;line-height:56px;text-align:center;border-radius:14px;background:linear-gradient(135deg,rgba(124,92,252,.1),rgba(34,211,238,.06));border:1px solid rgba(124,92,252,.1)}
 .feature h3{font-size:1.1em;margin-bottom:10px}
 .feature p{color:var(--text2);font-size:.9em;line-height:1.7}
 
 /* Comparison Table */
-.table-wrap{overflow-x:auto;margin:20px 0;border-radius:var(--radius);border:1px solid var(--border)}
+.table-wrap{overflow-x:auto;margin:20px 0;border-radius:var(--radius);border:1px solid rgba(124,92,252,.12);box-shadow:0 8px 30px rgba(0,0,0,.15)}
 table{width:100%;border-collapse:collapse;font-size:.9em}
 th,td{padding:14px 18px;text-align:center;border-bottom:1px solid var(--border)}
 th{background:rgba(18,18,28,.9);color:var(--text2);font-weight:600;white-space:nowrap;font-size:.82em;text-transform:uppercase;letter-spacing:.05em}
@@ -121,17 +131,17 @@ tr:last-child td{border-bottom:none}
 /* Quickstart Steps */
 .steps{display:flex;flex-direction:column;gap:24px;max-width:720px;margin:0 auto}
 .step{display:flex;gap:20px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;backdrop-filter:blur(10px);transition:all .3s}
-.step:hover{border-color:var(--border-h);transform:translateX(4px)}
+.step:hover{border-color:var(--accent);transform:translateX(6px);box-shadow:0 8px 30px rgba(124,92,252,.1)}
 .step-num{flex-shrink:0;width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1em;box-shadow:0 4px 15px rgba(124,92,252,.3)}
 .step-content h4{margin-bottom:6px;font-size:1.05em}
 .step-content p{color:var(--text2);font-size:.9em;margin-bottom:10px}
-pre{background:rgba(8,8,13,.8);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px 20px;overflow-x:auto;margin:0}
+pre{background:rgba(8,8,13,.9);border:1px solid rgba(124,92,252,.15);border-radius:var(--radius-sm);padding:16px 20px;overflow-x:auto;margin:0;box-shadow:0 4px 20px rgba(0,0,0,.2)}
 pre code{background:none;padding:0;font-size:.85em;line-height:1.8;font-family:'Fira Code',Consolas,monospace;color:#c4b5fd}
 
 /* MCP Tools */
 .tools-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:20px}
 .tool-group{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;backdrop-filter:blur(10px);transition:all .3s}
-.tool-group:hover{border-color:var(--border-h)}
+.tool-group:hover{border-color:rgba(124,92,252,.3);box-shadow:0 8px 30px rgba(0,0,0,.15)}
 .tool-group h3{font-size:1em;margin-bottom:16px;display:flex;align-items:center;gap:8px;padding-bottom:12px;border-bottom:1px solid var(--border)}
 .tool-item{display:flex;align-items:baseline;gap:12px;padding:8px 0;font-size:.88em;border-bottom:1px solid rgba(255,255,255,.03)}
 .tool-item:last-child{border-bottom:none}
@@ -141,7 +151,7 @@ pre code{background:none;padding:0;font-size:.85em;line-height:1.8;font-family:'
 /* Sandbox */
 .sandbox-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}
 .sandbox-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;text-align:center;backdrop-filter:blur(10px);transition:all .3s;position:relative;overflow:hidden}
-.sandbox-card:hover{transform:translateY(-4px);border-color:var(--border-h)}
+.sandbox-card:hover{transform:translateY(-6px);border-color:var(--accent);box-shadow:0 16px 40px rgba(0,0,0,.2)}
 .sandbox-card .level{font-size:1.5em;font-weight:800;margin-bottom:8px;font-family:'Fira Code',Consolas,monospace}
 .sandbox-card .level.strict{color:var(--red)}
 .sandbox-card .level.relaxed{color:var(--orange)}
@@ -156,14 +166,15 @@ pre code{background:none;padding:0;font-size:.85em;line-height:1.8;font-family:'
 /* Requirements */
 .req-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
 .req-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:22px;display:flex;align-items:center;gap:14px;backdrop-filter:blur(10px);transition:all .3s}
-.req-item:hover{border-color:var(--border-h)}
+.req-item:hover{border-color:rgba(124,92,252,.3);transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.15)}
 .req-item .req-icon{font-size:1.8em;flex-shrink:0}
 .req-item .req-text h4{font-size:.95em;margin-bottom:2px}
 .req-item .req-text p{font-size:.8em;color:var(--text2)}
 
 /* CTA */
 .cta-section{text-align:center;padding:100px 24px;position:relative}
-.cta-section::before{content:'';position:absolute;top:0;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent)}
+.cta-section::before{content:'';position:absolute;top:0;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,rgba(124,92,252,.3),transparent)}
+.cta-section::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:600px;height:300px;border-radius:50%;background:radial-gradient(ellipse,rgba(124,92,252,.06),transparent 70%);pointer-events:none}
 .cta-section h2{font-size:clamp(1.6rem,3.5vw,2.4rem);font-weight:800;margin-bottom:12px}
 .cta-section p{color:var(--text2);margin-bottom:32px;font-size:1.05em}
 .cta-section .btn{font-size:1em;padding:14px 36px}
@@ -175,9 +186,9 @@ pre code{background:none;padding:0;font-size:.85em;line-height:1.8;font-family:'
 .footer-links{display:flex;gap:20px;justify-content:center;margin-bottom:12px}
 
 /* Back to Top */
-.back-top{position:fixed;bottom:30px;right:30px;width:44px;height:44px;border-radius:12px;background:var(--surface);border:1px solid var(--border);color:var(--text2);display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transform:translateY(10px);transition:all .3s;z-index:99;backdrop-filter:blur(10px)}
+.back-top{position:fixed;bottom:30px;right:30px;width:44px;height:44px;border-radius:12px;background:rgba(18,18,28,.9);border:1px solid rgba(124,92,252,.2);color:var(--text2);display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transform:translateY(10px);transition:all .3s;z-index:99;backdrop-filter:blur(10px);font-size:1.1em}
 .back-top.show{opacity:1;transform:translateY(0)}
-.back-top:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-2px)}
+.back-top:hover{border-color:var(--accent);color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent2));transform:translateY(-3px);box-shadow:0 8px 25px rgba(124,92,252,.3)}
 
 /* Responsive */
 @media(max-width:768px){
@@ -213,12 +224,13 @@ pre code{background:none;padding:0;font-size:.85em;line-height:1.8;font-family:'
   </div>
 </nav>
 
+<canvas id="particles"></canvas>
+
 <!-- Hero -->
 <section class="hero">
   <div class="hero-glow g1"></div>
   <div class="hero-glow g2"></div>
   <div class="hero-glow g3"></div>
-  <canvas id="particles"></canvas>
   <div class="hero-badge"><span class="dot"></span>活跃维护中 · v2.0.17</div>
   <h1>manim-web</h1>
   <p class="hero-sub" id="heroSub"></p>
@@ -250,50 +262,80 @@ pre code{background:none;padding:0;font-size:.85em;line-height:1.8;font-family:'
     <div class="demo-card reveal">
       <div class="card-header">
         <div class="card-icon">🔷</div>
-        <div class="card-title"><h4>图形创建与变换</h4><code>web_persistent_add()</code></div>
+        <div class="card-title"><h4>图形创建与变换</h4></div>
         <div class="card-badge">核心</div>
       </div>
       <div class="img-wrap"><img src="https://raw.githubusercontent.com/1Cyrvox/manim-mcpweb/main/docs/demo_shapes.gif" alt="图形变换" loading="lazy"></div>
+      <div class="card-code">
+        <div class="mcp-line"><span class="mcp-tool">web_persistent_add</span><span class="mcp-arg">("c = Circle(color=BLUE)")</span></div>
+        <div class="mcp-line"><span class="mcp-tool">web_persistent_add</span><span class="mcp-arg">("self.play(Create(c))")</span></div>
+        <div class="mcp-line"><span class="mcp-comment"># → 圆形渐入动画</span></div>
+      </div>
     </div>
     <div class="demo-card reveal">
       <div class="card-header">
         <div class="card-icon">📐</div>
-        <div class="card-title"><h4>数学公式推导</h4><code>MathTex + Transform</code></div>
+        <div class="card-title"><h4>数学公式渲染</h4></div>
         <div class="card-badge">核心</div>
       </div>
       <div class="img-wrap"><img src="https://raw.githubusercontent.com/1Cyrvox/manim-mcpweb/main/docs/demo_math.gif" alt="数学公式" loading="lazy"></div>
+      <div class="card-code">
+        <div class="mcp-line"><span class="mcp-tool">web_persistent_add</span><span class="mcp-arg">("eq = MathTex('E=mc^2')")</span></div>
+        <div class="mcp-line"><span class="mcp-tool">web_persistent_add</span><span class="mcp-arg">("self.play(Write(eq))")</span></div>
+        <div class="mcp-line"><span class="mcp-comment"># → LaTeX 公式书写动画</span></div>
+      </div>
     </div>
     <div class="demo-card reveal">
       <div class="card-header">
         <div class="card-icon">📈</div>
-        <div class="card-title"><h4>函数图像绘制</h4><code>Axes + Plot + Animate</code></div>
+        <div class="card-title"><h4>函数图像绘制</h4></div>
         <div class="card-badge">核心</div>
       </div>
       <div class="img-wrap"><img src="https://raw.githubusercontent.com/1Cyrvox/manim-mcpweb/main/docs/demo_graph.gif" alt="函数图像" loading="lazy"></div>
+      <div class="card-code">
+        <div class="mcp-line"><span class="mcp-tool">web_persistent_add</span><span class="mcp-arg">("axes = Axes()")</span></div>
+        <div class="mcp-line"><span class="mcp-tool">web_persistent_add</span><span class="mcp-arg">("graph = axes.plot(lambda x: x**2)")</span></div>
+        <div class="mcp-line"><span class="mcp-comment"># → 坐标系 + 函数曲线</span></div>
+      </div>
     </div>
     <div class="demo-card reveal">
       <div class="card-header">
         <div class="card-icon">🎬</div>
-        <div class="card-title"><h4>综合动画编排</h4><code>DrawBorderThenFill</code></div>
+        <div class="card-title"><h4>动画编排组合</h4></div>
         <div class="card-badge">核心</div>
       </div>
       <div class="img-wrap"><img src="https://raw.githubusercontent.com/1Cyrvox/manim-mcpweb/main/docs/demo_composite.gif" alt="综合动画" loading="lazy"></div>
+      <div class="card-code">
+        <div class="mcp-line"><span class="mcp-tool">web_persistent_add</span><span class="mcp-arg">("self.play(Transform(sq, c))")</span></div>
+        <div class="mcp-line"><span class="mcp-tool">web_persistent_play</span><span class="mcp-arg">("FadeOut(sq)")</span></div>
+        <div class="mcp-line"><span class="mcp-comment"># → 图形变换 + 淡出</span></div>
+      </div>
     </div>
     <div class="demo-card reveal">
       <div class="card-header">
-        <div class="card-icon">🖼️</div>
-        <div class="card-title"><h4>横屏视频导出</h4><code>render_video(16:9)</code></div>
-        <div class="card-badge">导出</div>
+        <div class="card-icon">📸</div>
+        <div class="card-title"><h4>实时截图捕获</h4></div>
+        <div class="card-badge">预览</div>
       </div>
-      <div class="img-wrap"><img src="https://raw.githubusercontent.com/1Cyrvox/manim-mcpweb/main/docs/templates/landscape_demo.gif" alt="横屏导出" loading="lazy"></div>
+      <div class="img-wrap"><img src="https://raw.githubusercontent.com/1Cyrvox/manim-mcpweb/main/docs/demo_shapes.gif" alt="截图捕获" loading="lazy"></div>
+      <div class="card-code">
+        <div class="mcp-line"><span class="mcp-tool">web_persistent_capture</span><span class="mcp-arg">(format="png")</span></div>
+        <div class="mcp-line"><span class="mcp-comment"># → 高质量截图，即时预览</span></div>
+        <div class="mcp-line"><span class="mcp-tool">web_persistent_frame</span><span class="mcp-arg">()</span></div>
+      </div>
     </div>
     <div class="demo-card reveal">
       <div class="card-header">
-        <div class="card-icon">📱</div>
-        <div class="card-title"><h4>竖屏视频导出</h4><code>render_video(9:16)</code></div>
+        <div class="card-icon">🎥</div>
+        <div class="card-title"><h4>视频渲染导出</h4></div>
         <div class="card-badge">导出</div>
       </div>
-      <div class="img-wrap"><img src="https://raw.githubusercontent.com/1Cyrvox/manim-mcpweb/main/docs/templates/portrait_demo.gif" alt="竖屏导出" loading="lazy"></div>
+      <div class="img-wrap"><img src="https://raw.githubusercontent.com/1Cyrvox/manim-mcpweb/main/docs/demo_composite.gif" alt="视频导出" loading="lazy"></div>
+      <div class="card-code">
+        <div class="mcp-line"><span class="mcp-tool">web_persistent_render_video</span><span class="mcp-arg">(format="mp4")</span></div>
+        <div class="mcp-line"><span class="mcp-tool">web_persistent_render_video</span><span class="mcp-arg">(format="gif")</span></div>
+        <div class="mcp-line"><span class="mcp-comment"># → mp4 / gif / webm 多格式</span></div>
+      </div>
     </div>
   </div>
 </section>
@@ -571,47 +613,87 @@ const counterObs=new IntersectionObserver((entries)=>{
 },{threshold:0.5});
 document.querySelectorAll('[data-count]').forEach(el=>counterObs.observe(el));
 
-// Particles
+// Full-Page Mouse-Interactive Particles
 (function(){
   const canvas=document.getElementById('particles');
   const ctx=canvas.getContext('2d');
-  let w,h,particles=[];
-  function resize(){w=canvas.width=canvas.offsetWidth;h=canvas.height=canvas.offsetHeight}
+  let w,h,particles=[],mouse={x:-9999,y:-9999,active:false};
+  const PARTICLE_COUNT=100,CONNECT_DIST=150,MOUSE_RADIUS=200,MOUSE_FORCE=.08;
+  const colors=['124,92,252','96,165,250','34,211,238','139,92,246','167,139,250'];
+  function resize(){w=canvas.width=window.innerWidth;h=canvas.height=window.innerHeight}
   resize();window.addEventListener('resize',resize);
+  document.addEventListener('mousemove',e=>{mouse.x=e.clientX;mouse.y=e.clientY;mouse.active=true});
+  document.addEventListener('mouseleave',()=>{mouse.active=false;mouse.x=-9999;mouse.y=-9999});
+  document.addEventListener('touchmove',e=>{const t=e.touches[0];mouse.x=t.clientX;mouse.y=t.clientY;mouse.active=true},{passive:true});
+  document.addEventListener('touchend',()=>{mouse.active=false;mouse.x=-9999;mouse.y=-9999});
   class P{
     constructor(){this.reset()}
     reset(){
       this.x=Math.random()*w;this.y=Math.random()*h;
-      this.vx=(Math.random()-.5)*.3;this.vy=(Math.random()-.5)*.3;
-      this.r=Math.random()*1.5+.5;this.a=Math.random()*.4+.1;
+      this.vx=(Math.random()-.5)*.5;this.vy=(Math.random()-.5)*.5;
+      this.r=Math.random()*2+.6;this.baseA=Math.random()*.45+.1;this.a=this.baseA;
+      this.color=colors[Math.floor(Math.random()*colors.length)];
+      this.pulse=Math.random()*Math.PI*2;this.pulseSpeed=.008+Math.random()*.02;
     }
     update(){
+      this.pulse+=this.pulseSpeed;
+      this.a=this.baseA+Math.sin(this.pulse)*.12;
+      if(mouse.active){
+        const dx=this.x-mouse.x,dy=this.y-mouse.y;
+        const d=Math.sqrt(dx*dx+dy*dy);
+        if(d<MOUSE_RADIUS&&d>0){
+          const force=(1-d/MOUSE_RADIUS)*MOUSE_FORCE;
+          this.vx+=dx/d*force;this.vy+=dy/d*force;
+          this.a=Math.min(.95,this.baseA+.35*(1-d/MOUSE_RADIUS));
+        }
+      }
+      this.vx*=.985;this.vy*=.985;
+      const speed=Math.sqrt(this.vx*this.vx+this.vy*this.vy);
+      if(speed>2.5){this.vx*=2.5/speed;this.vy*=2.5/speed}
       this.x+=this.vx;this.y+=this.vy;
-      if(this.x<0||this.x>w)this.vx*=-1;
-      if(this.y<0||this.y>h)this.vy*=-1;
+      if(this.x<-20)this.x=w+20;if(this.x>w+20)this.x=-20;
+      if(this.y<-20)this.y=h+20;if(this.y>h+20)this.y=-20;
     }
     draw(){
       ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
-      ctx.fillStyle=`rgba(124,92,252,${this.a})`;ctx.fill();
+      ctx.fillStyle=`rgba(${this.color},${this.a})`;ctx.fill();
+      if(this.a>.35){
+        ctx.beginPath();ctx.arc(this.x,this.y,this.r*3.5,0,Math.PI*2);
+        ctx.fillStyle=`rgba(${this.color},${this.a*.12})`;ctx.fill();
+      }
     }
   }
-  for(let i=0;i<60;i++)particles.push(new P());
+  for(let i=0;i<PARTICLE_COUNT;i++)particles.push(new P());
   function animate(){
     ctx.clearRect(0,0,w,h);
     particles.forEach(p=>{p.update();p.draw()});
-    // Draw connections
     for(let i=0;i<particles.length;i++){
       for(let j=i+1;j<particles.length;j++){
-        const dx=particles[i].x-particles[j].x;
-        const dy=particles[i].y-particles[j].y;
+        const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y;
         const d=Math.sqrt(dx*dx+dy*dy);
-        if(d<120){
+        if(d<CONNECT_DIST){
+          const alpha=.1*(1-d/CONNECT_DIST);
+          const c=particles[i].color;
           ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);
           ctx.lineTo(particles[j].x,particles[j].y);
-          ctx.strokeStyle=`rgba(124,92,252,${.08*(1-d/120)})`;
-          ctx.stroke();
+          ctx.strokeStyle=`rgba(${c},${alpha})`;ctx.lineWidth=.5;ctx.stroke();
         }
       }
+    }
+    if(mouse.active){
+      for(let i=0;i<particles.length;i++){
+        const dx=particles[i].x-mouse.x,dy=particles[i].y-mouse.y;
+        const d=Math.sqrt(dx*dx+dy*dy);
+        if(d<MOUSE_RADIUS){
+          const alpha=.25*(1-d/MOUSE_RADIUS);
+          ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);
+          ctx.lineTo(mouse.x,mouse.y);
+          ctx.strokeStyle=`rgba(124,92,252,${alpha})`;ctx.lineWidth=.7;ctx.stroke();
+        }
+      }
+      const g=ctx.createRadialGradient(mouse.x,mouse.y,0,mouse.x,mouse.y,MOUSE_RADIUS*.6);
+      g.addColorStop(0,'rgba(124,92,252,.08)');g.addColorStop(1,'rgba(124,92,252,0)');
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(mouse.x,mouse.y,MOUSE_RADIUS*.6,0,Math.PI*2);ctx.fill();
     }
     requestAnimationFrame(animate);
   }
